@@ -2,6 +2,9 @@
 dist/
 .astro/
 
+# 本地知识图谱（graphify 生成，可再生）
+graphify-out/
+
 # dependencies
 node_modules/
 

@@ -1,23 +1,31 @@
 ---
 import BrandMark from './BrandMark.astro';
+import { manualUrl, type Lang } from '../i18n';
+import { footer as copy } from '../content/site-copy';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 
 const year = new Date().getFullYear();
 
 const groups = [
   {
-    title: '手册',
+    title: copy.manualGroup[lang],
     links: [
-      { href: '/manual', label: '用户手册' },
-      { href: '/manual/quickstart', label: '五分钟快速上手' },
-      { href: '/manual/interface', label: '界面使用' },
+      { href: manualUrl(lang), label: lang === 'zh' ? '用户手册' : 'User manual' },
+      { href: manualUrl(lang, 'first-run'), label: lang === 'zh' ? '第一次使用' : 'First run' },
+      { href: manualUrl(lang, 'interface'), label: lang === 'zh' ? '界面使用' : 'Using the interface' },
     ],
   },
   {
-    title: '查阅',
+    title: copy.referenceGroup[lang],
     links: [
-      { href: '/manual/config', label: '配置手册' },
-      { href: '/manual/security', label: '安全与审批模型' },
-      { href: '/manual/commands', label: '命令速查' },
+      { href: manualUrl(lang, 'configuration'), label: lang === 'zh' ? '配置怎么写' : 'Writing configuration' },
+      { href: manualUrl(lang, 'multi-agent'), label: lang === 'zh' ? '多 Agent 与委派' : 'Multiple agents' },
+      { href: manualUrl(lang, 'commands'), label: lang === 'zh' ? '命令行速查' : 'Command-line reference' },
     ],
   },
 ];
@@ -28,11 +36,11 @@ const groups = [
     <div class="footer__brand">
       <div class="footer__logo">
         <BrandMark size={20} uid="foot" />
-        <span>heron</span>
+        <span>openheron</span>
       </div>
       <p class="faint">
-        跑在本地、配置是文件的多 Agent 运行时。<br />
-        「长久静立，瞬间精准出手。」
+        {copy.tagline[lang]}<br />
+        {copy.motto[lang]}
       </p>
     </div>
 
@@ -52,7 +60,7 @@ const groups = [
     }
 
     <div class="footer__col">
-      <h4>技术栈</h4>
+      <h4>{lang === 'zh' ? '技术栈' : 'Stack'}</h4>
       <ul class="footer__tags">
         <li><span class="badge badge--brand">Go 1.27</span></li>
         <li><span class="badge badge--cyan">SSE</span></li>
@@ -62,8 +70,14 @@ const groups = [
   </div>
 
   <div class="container footer__bottom">
-    <span class="faint">© {year} heron</span>
-    <span class="faint">内容依据 heron 用户手册整理</span>
+    <span class="faint">© {year} openheron</span>
+    <span class="faint">
+      {lang === 'zh' ? '内容依据 openheron 用户手册整理' : 'Content curated from the openheron user manual'}
+    </span>
+    <a class="footer__contact" href="mailto:ouranoshong@outlook.com">
+      <span class="footer__contact-label">{lang === 'zh' ? '联系' : 'Contact'}</span>
+      <span>ouranoshong@outlook.com</span>
+    </a>
   </div>
 </footer>
 
@@ -128,6 +142,7 @@ const groups = [
   .footer__bottom {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 16px;
     padding-top: 24px;
     border-top: 1px solid var(--border);
@@ -135,10 +150,39 @@ const groups = [
     flex-wrap: wrap;
   }
 
+  .footer__contact {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-left: auto;
+    color: var(--text-muted);
+    transition: color 0.16s ease;
+  }
+
+  .footer__contact:hover {
+    color: var(--accent);
+  }
+
+  .footer__contact-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  .footer__contact:hover .footer__contact-label {
+    color: var(--text-faint);
+  }
+
   @media (max-width: 880px) {
     .footer__inner {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 32px;
+    }
+
+    .footer__contact {
+      margin-left: 0;
     }
   }
 

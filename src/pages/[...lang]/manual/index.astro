@@ -1,15 +1,29 @@
 ---
 import { getCollection, render } from 'astro:content';
-import Base from '../../layouts/Base.astro';
+import Base from '../../../layouts/Base.astro';
+import { manualUrl, homeUrl, DEFAULT_LANG, type Lang } from '../../../i18n';
+import { manualPage as copy } from '../../../content/site-copy';
 
-const entries = (await getCollection('manual')).sort((a, b) => a.data.order - b.data.order);
+export function getStaticPaths() {
+  return [
+    { params: { lang: undefined } },
+    { params: { lang: 'zh' } },
+  ];
+}
+
+const lang: Lang = Astro.params.lang === 'zh' ? 'zh' : DEFAULT_LANG;
+const other: Lang = lang === 'zh' ? 'en' : 'zh';
+
+const entries = (await getCollection('manual', (e) => e.data.lang === lang)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
 
 // 每章的小节标题：渲染一次拿 headings，页面上直接链到对应锚点。
 const chapters = await Promise.all(
   entries.map(async (entry) => {
     const { headings } = await render(entry);
     return {
-      slug: entry.data.slug,
+      slug: entry.data.chapterSlug,
       title: entry.data.title,
       chapter: entry.data.chapter,
       sections: headings.filter((h) => h.depth === 2),
@@ -19,18 +33,16 @@ const chapters = await Promise.all(
 ---
 
 <Base
-  title="heron 用户手册"
-  description="heron 用户手册：怎么装、怎么配、怎么用。安装、配置、界面操作、审批模型、多 agent、知识库、命令速查与故障排查。"
+  title={`${copy.title[lang]} — openheron`}
+  description={copy.lead[lang]}
+  lang={lang}
+  alternatePath={manualUrl(other)}
 >
   <section class="page-head">
     <div class="container">
-      <span class="eyebrow">User manual</span>
-      <h1>heron 用户手册</h1>
-      <p>
-        面向<strong>使用者</strong>：怎么装、怎么配、怎么用。<br />
-        内部设计与取舍不在这里 —— 本手册描述的行为以仓库当前代码为准；
-        示例文件均来自仓库里的 <code>.heron-example/</code> 与 <code>initcfg/templates/</code>。
-      </p>
+      <span class="eyebrow">{copy.eyebrow[lang]}</span>
+      <h1>{copy.title[lang]}</h1>
+      <p>{copy.lead[lang]}</p>
     </div>
   </section>
 
@@ -40,14 +52,14 @@ const chapters = await Promise.all(
         {
           chapters.map((c) => (
             <article class="chapter-card" data-enter="flip">
-              <a href={`/manual/${c.slug}`} class="chapter-card__link">
+              <a href={manualUrl(lang, c.slug)} class="chapter-card__link">
                 <span class="chapter-card__no">{c.chapter}</span>
                 <h2 class="chapter-card__title">{c.title}</h2>
               </a>
               <ul class="chapter-card__sections">
                 {c.sections.map((s) => (
                   <li>
-                    <a href={`/manual/${c.slug}#${s.slug}`}>{s.text}</a>
+                    <a href={`${manualUrl(lang, c.slug)}#${s.slug}`}>{s.text}</a>
                   </li>
                 ))}
               </ul>
@@ -56,9 +68,7 @@ const chapters = await Promise.all(
         }
       </div>
 
-      <p class="source-note" data-enter="rise">
-        手册原文按章拆开，每章一页。左边目录列出全部小节，滚动时会跟着高亮当前小节。
-      </p>
+      <p class="source-note" data-enter="rise">{copy.note[lang]}</p>
     </div>
   </section>
 </Base>

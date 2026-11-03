@@ -1,80 +1,134 @@
 ---
 // 架构示意简图：概念层级，不含实现细节。
-// 分层依据 heron 的架构文档 —— 浏览器 → 接口层 → 编排运行时 → agent → 工具，
+// 分层依据 openheron 的架构文档 —— 浏览器 → 接口层 → 编排运行时 → agent → 工具，
 // 事件再沿 AG-UI 流回到浏览器。
+import type { Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const zh = lang === 'zh';
+
+const layers = [
+  {
+    label: zh ? '你' : 'You',
+    desc: zh ? '浏览器里对话 · 审批 · 传附件' : 'Chat, approve and attach in the browser',
+    mod: 'you',
+  },
+  {
+    label: zh ? '接口层' : 'Interface layer',
+    desc: zh ? '一条会话一条常驻运行线 · 事件流式回传' : 'One resident run line per session · streamed events',
+  },
+  {
+    label: zh ? '运行时' : 'Runtime',
+    desc: zh ? '多轮常驻 · 单轮准入 · 从断点恢复' : 'Multi-turn, one turn at a time, resumable from checkpoints',
+    mod: 'key',
+  },
+  {
+    label: 'agent',
+    desc: zh ? '提示词 · 模型 · 工具 · 子 agent' : 'Prompt · model · tools · sub agents',
+    mod: 'key',
+  },
+];
+
+const links = [
+  zh ? '请求' : 'Request',
+  zh ? '编排' : 'Orchestrate',
+  zh ? '装配' : 'Assemble',
+  zh ? '调用' : 'Call',
+];
+
+const tools = [
+  {
+    icon: '◔',
+    name: zh ? '读代码' : 'Read code',
+    desc: zh ? '检索、追调用链' : 'Search, trace call chains',
+  },
+  {
+    icon: '✎',
+    name: zh ? '改文件 · 执行命令' : 'Edit files · run commands',
+    desc: zh ? '默认要先点头' : 'Needs your nod first',
+    gate: true,
+  },
+  {
+    icon: '⇄',
+    name: zh ? '委派子 agent' : 'Delegate to sub agents',
+    desc: zh ? '并行或串行' : 'In parallel or in series',
+  },
+  {
+    icon: '⌕',
+    name: zh ? '检索知识库' : 'Search the knowledge base',
+    desc: zh ? '带出处引用' : 'With source citations',
+  },
+];
 ---
 
 <div class="arch" data-enter="flip">
   <div class="arch__stack">
     <div class="arch__row">
       <div class="arch__box arch__box--you">
-        <span class="arch__label">你</span>
-        <span class="arch__desc">浏览器里对话 · 审批 · 传附件</span>
+        <span class="arch__label">{layers[0].label}</span>
+        <span class="arch__desc">{layers[0].desc}</span>
       </div>
     </div>
 
-    <div class="arch__link"><span class="arch__link-text">请求</span></div>
+    <div class="arch__link"><span class="arch__link-text">{links[0]}</span></div>
 
     <div class="arch__row">
       <div class="arch__box">
-        <span class="arch__label">接口层</span>
-        <span class="arch__desc">一条会话一条常驻运行线 · 事件流式回传</span>
+        <span class="arch__label">{layers[1].label}</span>
+        <span class="arch__desc">{layers[1].desc}</span>
       </div>
     </div>
 
-    <div class="arch__link"><span class="arch__link-text">编排</span></div>
+    <div class="arch__link"><span class="arch__link-text">{links[1]}</span></div>
 
     <div class="arch__row">
       <div class="arch__box arch__box--key">
-        <span class="arch__label">运行时</span>
-        <span class="arch__desc">多轮常驻 · 抢占与中止 · 从断点恢复</span>
+        <span class="arch__label">{layers[2].label}</span>
+        <span class="arch__desc">{layers[2].desc}</span>
       </div>
     </div>
 
-    <div class="arch__link"><span class="arch__link-text">装配</span></div>
+    <div class="arch__link"><span class="arch__link-text">{links[2]}</span></div>
 
     <div class="arch__row">
       <div class="arch__box arch__box--key">
-        <span class="arch__label">agent</span>
-        <span class="arch__desc">提示词 · 模型 · 工具 · 子 agent</span>
+        <span class="arch__label">{layers[3].label}</span>
+        <span class="arch__desc">{layers[3].desc}</span>
       </div>
     </div>
 
-    <div class="arch__link"><span class="arch__link-text">调用</span></div>
+    <div class="arch__link"><span class="arch__link-text">{links[3]}</span></div>
 
     <div class="arch__row arch__row--tools">
-      <div class="arch__tool">
-        <span class="arch__tool-icon" aria-hidden="true">◔</span>
-        <span class="arch__tool-name">读代码</span>
-        <span class="arch__tool-desc">检索、追调用链</span>
-      </div>
-      <div class="arch__tool arch__tool--gate">
-        <span class="arch__tool-icon" aria-hidden="true">✎</span>
-        <span class="arch__tool-name">改文件 · 执行命令</span>
-        <span class="arch__tool-desc">默认要先点头</span>
-      </div>
-      <div class="arch__tool">
-        <span class="arch__tool-icon" aria-hidden="true">⇄</span>
-        <span class="arch__tool-name">委派子 agent</span>
-        <span class="arch__tool-desc">并行或串行</span>
-      </div>
-      <div class="arch__tool">
-        <span class="arch__tool-icon" aria-hidden="true">⌕</span>
-        <span class="arch__tool-name">检索知识库</span>
-        <span class="arch__tool-desc">带出处引用</span>
-      </div>
+      {
+        tools.map((tool) => (
+          <div class:list={['arch__tool', { 'arch__tool--gate': tool.gate }]}>
+            <span class="arch__tool-icon" aria-hidden="true">{tool.icon}</span>
+            <span class="arch__tool-name">{tool.name}</span>
+            <span class="arch__tool-desc">{tool.desc}</span>
+          </div>
+        ))
+      }
     </div>
 
     <div class="arch__link arch__link--back">
-      <span class="arch__link-text">事件流回到浏览器</span>
+      <span class="arch__link-text">{zh ? '事件流回到浏览器' : 'Event stream back to the browser'}</span>
     </div>
   </div>
 
   <div class="arch__note">
-    <span class="arch__note-badge">需要你点头的动作</span>
+    <span class="arch__note-badge">{zh ? '需要你点头的动作' : 'Actions that need your nod'}</span>
     <span class="arch__note-text">
-      走到「改文件 · 执行命令」这类动作时，这一轮当场停住，界面弹出审批卡；
-      你批准，它从断点继续；你拒绝，理由写不写都行，写了会回灌给它让它换条路走。
+      {
+        zh
+          ? '走到「改文件 · 执行命令」这类动作时，这一轮当场停住，界面弹出审批卡；你批准，它从断点继续；你拒绝，理由写不写都行，写了会回灌给它让它换条路走。'
+          : 'When the run reaches an action like "edit files · run commands", it stops on the spot and an approval card appears: approve and it resumes from the checkpoint, reject with or without a reason — a reason is sent back so the agent can take another route.'
+      }
     </span>
   </div>
 </div>

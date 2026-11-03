@@ -1,5 +1,5 @@
 ---
-// heron 标识：H 的变形 —— 苍鹭的长喙 + 电路走线与数据点。
+// openheron 标识：H 的变形 —— 苍鹭的长喙 + 电路走线与数据点。
 // 主体居中、铺满 48×48，背景透明；外圈暗色描边只在浅色背景上起作用。
 // 与 public/brand/heron-mark.svg 同一套图形，这里内联以便跟随站点配色。
 interface Props {
@@ -9,19 +9,23 @@ interface Props {
   uid?: string;
 }
 
-const { size = 28, title = 'heron', uid = 'a' } = Astro.props;
+const { size = 28, title = 'openheron', uid = 'a' } = Astro.props;
 ---
 
 <svg
   class="brand-svg"
   xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width={size} height={size} role="img" aria-label={title}>
   <!--
-    heron 标识：H 的变形 —— 科技与自然的结合
-    字母 —— H 是 heron 的首字母；左竖写成苍鹭的颈（上窄下宽），左上长出苍鹭的长喙
-    自然 —— 苍鹭的头：细长的喙、基部的眼
-    科技 —— 右竖上接一段直角走线的电路，末端是一枚分离的数据点
-    构图 —— 主体居中、几乎撑满 48×48 画布，背景透明
-             （外圈一圈暗色描边，只在浅色背景上起作用，保证 favicon 也读得出）
+    openheron mark: an H monogram — nature and technology fused
+    Letter — H is heron's initial; the left stem becomes the heron's neck
+            (narrowing upward), with the long beak growing out of its upper left
+    Nature — the heron's head: a slender beak, an eye at its base
+    Tech — the right stem continues into a right-angled circuit trace ending in
+          a detached data point
+    Composition — the mark is centred and nearly fills the 48×48 canvas, on a
+            transparent background
+            (a dark outline ring only shows on light backgrounds, so the favicon
+             stays legible on either)
   -->
   <defs>
     <linearGradient id={`brandMarkGrad-${uid}`} x1="3" y1="3" x2="45" y2="45" gradientUnits="userSpaceOnUse">
@@ -30,7 +34,7 @@ const { size = 28, title = 'heron', uid = 'a' } = Astro.props;
       <stop offset="1" stop-color="#8fe3ff" />
     </linearGradient>
 
-    <!-- 主体形状：喙 / 颈 / 右竖 / 横杠 -->
+    <!-- main shapes: beak / neck / right stem / crossbar -->
     <mask id={`brandMarkBody-${uid}`} maskUnits="userSpaceOnUse" x="0" y="0" width="48" height="48">
       <g transform="translate(24 24) scale(1.3) translate(-28.2 -24.5)">
         <g fill="#fff">
@@ -39,12 +43,12 @@ const { size = 28, title = 'heron', uid = 'a' } = Astro.props;
           <rect x="28" y="13" width="6.6" height="28" rx="1.4" />
           <rect x="12.5" y="24" width="15.5" height="6.6" rx="1.4" />
         </g>
-        <!-- 眼 -->
+        <!-- eye -->
         <circle cx="17.6" cy="13.4" r="1.55" fill="#000" />
       </g>
     </mask>
 
-    <!-- 描边用的实心剪影（放大 5%，垫在主体下面） -->
+    <!-- solid silhouette for the outline, scaled 5% up, layered under the body -->
     <mask id={`brandMarkHalo-${uid}`} maskUnits="userSpaceOnUse" x="0" y="0" width="48" height="48">
       <g transform="translate(24 24) scale(1.365) translate(-28.2 -24.5)">
         <g fill="#fff">
@@ -57,12 +61,12 @@ const { size = 28, title = 'heron', uid = 'a' } = Astro.props;
     </mask>
   </defs>
 
-  <!-- 暗色描边（浅底可见，深底不可见） -->
+  <!-- dark outline (visible on light backgrounds, invisible on dark) -->
   <rect width="48" height="48" fill="#040319" mask={`url(#brandMarkHalo-${uid})`} />
-  <!-- 主体 -->
+  <!-- body -->
   <rect width="48" height="48" fill={`url(#brandMarkGrad-${uid})`} mask={`url(#brandMarkBody-${uid})`} />
 
-  <!-- 电路走线 + 数据点 -->
+  <!-- circuit trace + data point -->
   <g
     stroke={`url(#brandMarkGrad-${uid})`}
     stroke-width="1.9"

@@ -4,25 +4,52 @@ import '../styles/global.css';
 import '../styles/effects.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { LANG_META, type Lang } from '../i18n';
 
 interface Props {
   title: string;
   description: string;
+  /** 当前页面语言 */
+  lang: Lang;
+  /**
+   * 另一语言下的同一页地址。
+   * 传了就输出 hreflang 与 og:locale:alternate。
+   */
+  alternatePath?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, lang, alternatePath } = Astro.props;
+const meta = LANG_META[lang];
 
 // 有真实域名时给 og:image 补绝对地址，没有就用相对路径。
-const ogImage = Astro.site ? new URL('/og.png', Astro.site).href : '/og.png';
+// 中英文各有一张分享图（public/og.png / public/og.en.png）。
+const ogPath = lang === 'en' ? '/og.en.png' : '/og.png';
+const ogImage = Astro.site ? new URL(ogPath, Astro.site).href : ogPath;
 // canonical 同理：每页指到自己的绝对地址。
-// build.format 为 file 时 Astro.url.pathname 是产物路径（/manual/x.html），
-// 这里去掉 .html / index.html，还原成对外的干净 URL。
-const route = Astro.url.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+// build.format 为 file 时 Astro.url.pathname 是产物路径（/zh/manual/x.html），
+// 去掉 .html 即对外的干净 URL —— 不带尾部斜杠，
+// 与 astro.config.mjs 的 trailingSlash: 'never' 一致。
+const route =
+  Astro.url.pathname
+    .replace(/\.html$/, '')
+    .replace(/\/index$/, '/')
+    .replace(/\/+$/, '') || '/';
 const canonical = Astro.site ? new URL(route, Astro.site).href : route;
+
+const altHref = alternatePath
+  ? Astro.site
+    ? new URL(alternatePath, Astro.site).href
+    : alternatePath
+  : undefined;
+
+// 当前页自己的 hreflang 值（另一语言指向自己这一版）
+const selfHreflang = lang === 'zh' ? 'zh-CN' : 'en';
+// 另一语言那一版的 hreflang 值
+const altHreflang = lang === 'zh' ? 'en' : 'zh-CN';
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={meta.htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -36,17 +63,21 @@ const canonical = Astro.site ? new URL(route, Astro.site).href : route;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={lang === 'zh' ? 'zh_CN' : 'en_US'} />
+    <link rel="alternate" hreflang={selfHreflang} href={canonical} />
+    {altHref && <link rel="alternate" hreflang={altHreflang} href={altHref} />}
+    {altHref && <meta property="og:locale:alternate" content={altHref} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#08060d" />
   </head>
   <body>
     <div class="aura"></div>
     <div class="grid-overlay"></div>
-    <Header />
+    <Header lang={lang} />
     <main>
       <slot />
     </main>
-    <Footer />
+    <Footer lang={lang} />
 
     <script>
       import '../scripts/enter';

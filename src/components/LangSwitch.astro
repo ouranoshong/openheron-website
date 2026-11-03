@@ -1,0 +1,67 @@
+---
+/**
+ * 语言切换器：把当前路径翻译成另一语言下的对应路径。
+ */
+import { LANG_META, LANG_SWITCH_ORDER, translatePath, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+  /** 当前路径（用于算出另一语言的地址） */
+  pathname: string;
+}
+
+const { lang, pathname } = Astro.props;
+---
+
+<div class="lang-switch" role="group" aria-label="Language">
+  {
+    LANG_SWITCH_ORDER.map((code) => (
+      <a
+        class:list={['lang-switch__btn', { 'is-active': code === lang }]}
+        href={translatePath(pathname, code)}
+        hreflang={LANG_META[code].htmlLang}
+        lang={LANG_META[code].htmlLang}
+        aria-current={code === lang ? 'true' : undefined}
+      >
+        {LANG_META[code].short}
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .lang-switch__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 24px;
+    padding: 0 7px;
+    border-radius: 7px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .lang-switch__btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .lang-switch__btn.is-active {
+    color: var(--bg);
+    background: var(--accent);
+  }
+</style>

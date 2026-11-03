@@ -1,10 +1,19 @@
 ---
 import BrandMark from './BrandMark.astro';
+import LangSwitch from './LangSwitch.astro';
+import { homeUrl, manualUrl, type Lang } from '../i18n';
+import { nav as copy } from '../content/site-copy';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 
 const nav = [
-  { href: '/', label: '首页' },
-  { href: '/manual', label: '用户手册' },
-  { href: '/manual/commands', label: '命令速查' },
+  { href: homeUrl(lang), label: copy.home[lang] },
+  { href: manualUrl(lang), label: copy.manual[lang] },
+  { href: manualUrl(lang, 'commands'), label: copy.commands[lang] },
 ];
 
 const current = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -14,14 +23,14 @@ const isActive = (href: string) =>
 
 <header class="header">
   <div class="container header__inner">
-    <a href="/" class="brand" aria-label="heron 首页">
+    <a href={homeUrl(lang)} class="brand" aria-label="openheron">
       <span class="brand__mark" aria-hidden="true">
         <BrandMark size={28} uid="head" />
       </span>
-      <span class="brand__name">heron</span>
+      <span class="brand__name">openheron</span>
     </a>
 
-    <nav class="nav" aria-label="主导航">
+    <nav class="nav" aria-label="Main navigation">
       {
         nav.map((item) => (
           <a href={item.href} class:list={['nav__link', { 'is-active': isActive(item.href) }]}>
@@ -32,10 +41,11 @@ const isActive = (href: string) =>
     </nav>
 
     <div class="header__actions">
-      <a class="btn btn--primary btn--sm" href="/manual/quickstart">快速开始</a>
+      <LangSwitch lang={lang} pathname={Astro.url.pathname} />
+      <a class="btn btn--primary btn--sm" href={manualUrl(lang, 'first-run')}>{copy.quickstart[lang]}</a>
     </div>
 
-    <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </div>
@@ -48,7 +58,8 @@ const isActive = (href: string) =>
         </a>
       ))
     }
-    <a class="btn btn--primary" href="/manual/quickstart">快速开始</a>
+    <LangSwitch lang={lang} pathname={Astro.url.pathname} />
+    <a class="btn btn--primary" href={manualUrl(lang, 'first-run')}>{copy.quickstart[lang]}</a>
   </div>
 </header>
 

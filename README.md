@@ -1,20 +1,22 @@
-# heron-website
+# openheron-website
 
-[heron](https://github.com/) 的**介绍与使用说明站点**。Astro 静态站，零运行时依赖。
+[openheron](https://github.com/ouranoshong/openheron) 的**介绍与使用说明站点**。Astro 静态站，零运行时依赖。
 
-heron 是一个**跑在本地、配置是文件的多 Agent 运行时**：一组 agent 各带模型、提示词与工具边界，
-共用一套审批闸门；需要你点头的动作会停下来等你批。
+openheron 是一个**跑在本地、配置是文件的多 Agent 运行时** —— Agent 即工具：
+每个专家 Agent 绑定适合自己的模型，父 Agent 只做编排与合成 —— token 花在真正需要它的地方。
+
+站点支持**中文与英文**两种语言（英文在根路径，中文在 `/zh`）。
 
 站点只做两件事：
 
 | 区块 | 路径 | 内容 |
 |---|---|---|
-| **介绍** | `/` | heron 是什么、能做什么、一轮对话怎么走、怎么跑起来 |
-| **使用说明** | `/manual/*` | 用户手册全文，按 10 章拆页，配侧边目录 |
+| **介绍** | `/` `/zh` | openheron 是什么、能做什么、一轮对话怎么走、怎么跑起来 |
+| **使用说明** | `/manual/*` `/zh/manual/*` | 用户手册全文，按 10 章拆页，配侧边目录 |
 
-站内**不展示设计细节**（内部架构、依赖约束、设计分册）。内容全部来自 heron 仓库的
-`docs/user-manual.md`，不在本站手工维护：构建时由 `scripts/build-content.mjs` 从仓库原文
-重新生成，仓库改了重新构建即可同步。
+站内**不展示设计细节**（内部架构、依赖约束、设计分册）。内容全部来自 openheron 仓库的
+`docs/user-manual_zh.md` 与 `docs/user-manual.md`，不在本站手工维护：构建时由
+`scripts/build-content.mjs` 从仓库原文重新生成，仓库改了重新构建即可同步。
 
 - 视觉：配色与排版参考 [Orrery 主题](https://github.com/formgong/orrery-astro-theme)（MIT）的视觉语言 ——
   **navy 黑底 + 单一青柠强调色 + 大字号浅色字 + 大留白**。
@@ -79,11 +81,11 @@ npm run deploy     # 构建 + 部署到 Cloudflare Pages
 
 ## 部署
 
-已部署到 **Cloudflare Pages**：<https://heron.bytebits.top>（备用地址 <https://heron-website-381.pages.dev>）
+已部署到 **Cloudflare Pages**：<https://heron.bytebits.top>（备用地址 <https://openheron-website-381.pages.dev>）
 
-- 项目名 `heron-website`，生产分支 `main`，配置见 `wrangler.jsonc`
-- 构建产物是纯静态文件，用 `build.format: 'file'` 输出（`manual.html` / `manual/quickstart.html`），
-  直接对应 `/manual` 与 `/manual/quickstart`，不会多一次尾斜杠跳转，canonical 也与实际地址一致
+- 项目名 `openheron-website`，生产分支 `main`，配置见 `wrangler.jsonc`
+- 构建产物是纯静态文件，用 `build.format: 'file'` 输出（`index.html` / `zh/manual/faq.html`），
+  直接对应 `/` 与 `/zh/manual/faq`，不会多一次尾斜杠跳转，canonical 也与实际地址一致
 - 部署前用 `SITE_URL` 注入真实域名，canonical 与 og:image 才是绝对地址：
 
 ```bash
@@ -92,7 +94,7 @@ SITE_URL=https://heron.bytebits.top npm run deploy
 
 - 重新部署后如果换域名，记得带上新的 `SITE_URL` 重建一次
 - 自定义域名 `heron.bytebits.top` 已在 Pages 项目里挂好（status: active）；DNS 记录由 Pages 侧管理
-- 构建用 `build.format: 'file'`（`manual.html` / `manual/security.html`），对外就是 `/manual` 与 `/manual/security`，
+- 构建用 `build.format: 'file'`（`index.html` / `zh/manual/faq.html`），对外就是 `/` 与 `/zh/manual/faq`，
   不多一次尾斜杠跳转；canonical 同理要自己把 `.html` / `index.html` 归一化掉
 - 登录凭据在 `~/.config/.wrangler/config/default.toml`（本机，不入库；`.gitignore` 已排除 `.wrangler/` 与 `.dev.vars`）
 
@@ -100,40 +102,82 @@ SITE_URL=https://heron.bytebits.top npm run deploy
 
 ## 内容管线
 
-手册原文随仓库一起放在 `docs/user-manual.md`，`scripts/build-content.mjs` 从它读取：
+手册原文在 openheron 仓库里（`docs/user-manual_zh.md` 与 `docs/user-manual.md`，
+**英文是主版本，`_zh` 是中文版**）。`scripts/build-content.mjs` 从中读取并按章拆分：
 
-1. 按「## N. 标题」切成 10 个文件 → `src/content/manual/`
+1. 按「## N. 标题」切成 10 个文件 → `src/content/manual/{zh,en}/`
 2. 丢掉原文的「## 目录」——站内由侧边目录代替
 3. 标题层级上移一级：章内小节变成 `h2`（页面语义是 `h1` 章标题 + `h2` 小节）
 4. 手册里指向其它设计分册（`architecture.md` 等）和源码文件（`../config/load.go`）的链接
    **降级为纯文本** —— 那些是设计细节，本站不展示，也不留死链
+5. 跨语言的同章链接（`user-manual.md` / `user-manual_zh.md`）换成站内对应语言的 URL
 
 `src/content/manual/` 是生成物，不要手工编辑。
 
-**手册更新了怎么同步**：把 heron 仓库里的最新版复制过来再构建 ——
+**手册更新了怎么同步**：默认直接从相邻的 openheron 仓库读，构建时无需复制：
 
 ```bash
-cp ../heron/docs/user-manual.md docs/user-manual.md
-SITE_URL=https://heron.bytebits.top npm run deploy
+OPENHERON_REPO=../openheron npm run build
 ```
 
-或者不动仓库里的副本，直接临时指向 heron 仓库构建一次（适合本地验证，不适合发布）：
+`OPENHERON_REPO` 不设时默认取 `../openheron`。也可以只针对一种语言临时指定：
 
 ```bash
-HERON_MANUAL=../heron/docs/user-manual.md npm run build
+OPENHERON_REPO=/path/to/openheron npm run build
 ```
+
+源文件找不到时，构建会沿用仓库里已有的生成内容（只要 `src/content/manual/{zh,en}/`
+非空），不会让构建挂掉。
+
+> **英文补丁**：`scripts/build-content.mjs` 里的 `EN_PATCHES` 补的是上游英文手册里
+> 还没翻的几行示例（§4.1 的 agent 提示词）。上游补好后删掉这段即可。
+
+## 双语
+
+站点支持中文与英文。**英文（默认语言）不带前缀，中文挂在 `/zh` 下**：
+
+| 路径 | 内容 |
+|---|---|
+| `/` | 英文首页（默认语言） |
+| `/zh` | 中文首页 |
+| `/manual` `/zh/manual` | 用户手册索引 |
+| `/manual/<slug>` `/zh/manual/<slug>` | 章节正文 |
+
+- 语言定义与 URL 规则在 `src/i18n.ts`（单一事实源）
+  —— 改默认语言就改这里的 `DEFAULT_LANG`：默认语言不带前缀，另一种语言挂在 `/<lang>` 下
+- 路由用可选 rest 参数 `src/pages/[...lang]/` 实现：`lang` 为空就是默认语言
+- 界面文案在 `src/content/site-copy.ts`（模板不写死中英两种字符串）
+- 语言切换器在 `src/components/LangSwitch.astro`，把当前路径翻译成另一语言的对应地址
+- 每页输出 `hreflang` 与 `og:locale:alternate`，canonical 不带尾部斜杠
+- 章节 slug 两种语言共用一套（`installation` / `first-run` / `config-root` / …），
+  语言靠路径前缀区分
 
 ## 页面
 
 | 路径 | 内容 |
 |---|---|
-| `/` | 首页：定位、终端演示、九项核心能力、**五条硬规则**、**架构示意简图**、可交互的 HITL 审批卡、出厂两个 agent、五分钟上手、使用教程入口 |
-| `/manual` | 用户手册索引：十章卡片，每张列出该章小节并可直达锚点 |
-| `/manual/<章节>` | 章节正文：原文全文 + 侧边目录（章 + 本章小节，滚动跟随高亮）+ 上下章导航 |
+| `/` `/zh` | 首页：定位、终端演示、**三条省 token 机制**、**边界声明**、**五条硬规则**、**架构示意简图**、可交互的 HITL 审批卡、核心能力表、出厂两个 agent、教程入口 |
+| `/manual` `/zh/manual` | 用户手册索引：十章卡片，每张列出该章小节并可直达锚点 |
+| `/manual/<slug>` `/zh/manual/<slug>` | 章节正文：原文全文 + 侧边目录（章 + 本章小节，滚动跟随高亮）+ 上下章导航 |
 
 站点页面上不出现任何仓库路径 —— 读者看到的是内容本身，不是它从哪个文件来的。
 
-章节 slug：`what-is-heron` / `quickstart` / `interface` / `config` / `multi-agent` / `knowledge-base` / `security` / `commands` / `troubleshooting` / `http-api`
+章节 slug（两种语言共用）：`installation` / `first-run` / `config-root` /
+`configuration` / `multi-agent` / `interface` / `knowledge-base` / `commands` /
+`http-api` / `faq`
+
+## 分享图
+
+`public/og.png`（中文）与 `public/og.en.png`（英文）是 1200×630 的社交分享图，
+由 `scripts/make-og.mjs` 用 SVG 精确排版后转 PNG —— 不用图像生成模型，
+因为模型渲染中文不可靠：
+
+```bash
+node scripts/make-og.mjs      # 生成 public/og.png
+node scripts/make-og.mjs en   # 生成 public/og.en.png
+```
+
+品牌标识图形复用 `public/brand/heron-mark.svg`，改标识后重新跑一次即可。
 
 ## 两个可交互点
 

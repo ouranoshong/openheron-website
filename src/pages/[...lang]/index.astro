@@ -1,0 +1,804 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Snippet from '../../components/Snippet.astro';
+import ApprovalDemo from '../../components/ApprovalDemo.astro';
+import ArchDiagram from '../../components/ArchDiagram.astro';
+import { homeUrl, manualUrl, DEFAULT_LANG, type Lang } from '../../i18n';
+import { home as copy, ui, site } from '../../content/site-copy';
+
+export function getStaticPaths() {
+  return [
+    // 默认语言（英文）不带前缀，直接挂在根路径
+    { params: { lang: undefined } },
+    { params: { lang: 'zh' } },
+  ];
+}
+
+const lang: Lang = Astro.params.lang === 'zh' ? 'zh' : DEFAULT_LANG;
+const other: Lang = lang === 'zh' ? 'en' : 'zh';
+
+// 该语言下的手册章节（用于首页的教程入口）
+const chapters = (await getCollection('manual', (e) => e.data.lang === lang))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((e) => ({
+    href: manualUrl(lang, e.data.chapterSlug),
+    title: e.data.title,
+    note: lang === 'zh' ? `第 ${e.data.chapter} 章` : `Ch. ${e.data.chapter}`,
+  }));
+
+const featured = [
+  { slug: 'first-run', label: lang === 'zh' ? '第一次使用' : 'First run' },
+  { slug: 'interface', label: lang === 'zh' ? '界面使用' : 'Using the interface' },
+  { slug: 'configuration', label: lang === 'zh' ? '配置怎么写' : 'Writing configuration' },
+  { slug: 'multi-agent', label: lang === 'zh' ? '多 Agent 与委派' : 'Multiple agents' },
+  { slug: 'knowledge-base', label: lang === 'zh' ? '知识库' : 'The knowledge base' },
+  { slug: 'commands', label: lang === 'zh' ? '命令行速查' : 'Command-line reference' },
+];
+
+const quickstartCode = lang === 'zh'
+  ? `# 构建（前端 + 单文件二进制）
+make build
+
+# 在你的项目里生成最小可运行配置
+cd /your/project && openheron init
+
+# 密钥只从环境变量读（出厂默认端点是 deepseek）
+export DEEPSEEK_API_KEY=sk-...
+
+# 启动，打开 http://localhost:8080
+openheron`
+  : `# Build (frontend + a single binary with the UI embedded)
+make build
+
+# Generate a minimal runnable configuration in your project
+cd /your/project && openheron init
+
+# Secrets are read from the environment only (deepseek by default)
+export DEEPSEEK_API_KEY=sk-...
+
+# Start, then open http://localhost:8080
+openheron`;
+
+const terminalBody = lang === 'zh'
+  ? `[main] config loaded: version=3f2a1b9c8d0e
+[main] frontend: embedded from web/dist
+
+&gt; 帮我看看这个仓库的顶层目录
+…`
+  : `[main] config loaded: version=3f2a1b9c8d0e
+[main] frontend: embedded from web/dist
+
+&gt; show me the top-level directories of this repo
+…`;
+---
+
+<Base
+  title={`${site.name} — ${site.tagline[lang]}`}
+  description={site.description[lang]}
+  lang={lang}
+  alternatePath={homeUrl(other)}
+>
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <canvas class="hero__scene" data-scene aria-hidden="true"></canvas>
+    <div class="container">
+      <div class="hero__badge">
+        <span class="badge badge--brand">openheron</span>
+        <span class="badge">{copy.badges.local[lang]}</span>
+        <span class="badge badge--cyan">{copy.badges.multi[lang]}</span>
+      </div>
+
+      <h1 class="hero__title">
+        {
+          // 第一行是 slogan 的重心（"Agent 即工具"），用渐变强调；
+          // 第二行是品类说明，用常规色。
+          copy.heroTitle[lang]
+            .split('\n')
+            .map((line, i) => (
+              // 两行之间要显式留一个空格：换行在 HTML 里会被吞掉，行内元素会黏在一起。
+              <Fragment set:html={i === 0 ? `<span class="text-gradient">${line}</span>` : ` ${line}`} />
+            ))
+        }
+      </h1>
+
+      <p class="hero__lead">{copy.heroLead[lang]}</p>
+
+      {/* 指标块：数字是主角，口径跟着走 —— 详见 boundaries 里同一条说明 */}
+      <figure class="hero__stat">
+        <span class="hero__stat-value">{copy.heroStat.value}</span>
+        <figcaption class="hero__stat-label">{copy.heroStat.label[lang]}</figcaption>
+      </figure>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href={manualUrl(lang, 'first-run')}>{copy.heroCta.primary[lang]}</a>
+        <a class="btn btn--ghost" href={manualUrl(lang)}>{copy.heroCta.secondary[lang]}</a>
+      </div>
+
+      <p class="hero__note">{copy.heroNote[lang]}</p>
+
+      <div class="hero__terminal">
+        <div class="terminal__bar">
+          <span class="terminal__dot"></span>
+          <span class="terminal__dot"></span>
+          <span class="terminal__dot"></span>
+          <span class="terminal__label">~/your-project</span>
+        </div>
+        <pre class="terminal__body"><span class="t-prompt">$</span> openheron
+<span class="t-dim">{terminalBody}</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 三条机制 ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head section-head--center" data-enter="rise">
+        <span class="eyebrow">{copy.mechanisms.eyebrow[lang]}</span>
+        <h2>{copy.mechanisms.title[lang]}</h2>
+        <p>{copy.mechanisms.lead[lang]}</p>
+      </div>
+
+      <div class="grid grid--3">
+        {
+          copy.mechanisms.items.map((m, i) => (
+            <article class="card cap" data-enter="flip" style={`animation-delay:${(i % 3) * 90}ms`}>
+              <span class="cap__no">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="cap__name">{m.name[lang]}</h3>
+              <p class="cap__desc">{m.desc[lang]}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 边界声明 ============ -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">{copy.boundaries.eyebrow[lang]}</span>
+        <h2>{copy.boundaries.title[lang]}</h2>
+      </div>
+
+      <ul class="bounds reveal">
+        {
+          copy.boundaries.items.map((b) => (
+            <li class="bound">
+              <span class="bound__mark" aria-hidden="true">★</span>
+              <p>{b.text[lang]}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ 五条硬规则 ============ -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">{copy.rules.eyebrow[lang]}</span>
+        <h2>{copy.rules.title[lang]}</h2>
+        <p>{copy.rules.lead[lang]}</p>
+      </div>
+
+      <ol class="rules reveal">
+        {
+          copy.rules.items.map((r, i) => (
+            <li class="rule">
+              <span class="rule__no">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3>{r.name[lang]}</h3>
+                <p>{r.desc[lang]}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 架构示意 ============ -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head section-head--center" data-enter="rise">
+        <span class="eyebrow">Architecture</span>
+        <h2>{lang === 'zh' ? '架构示意' : 'Architecture'}</h2>
+        <p>
+          {
+            lang === 'zh'
+              ? '一条消息从你手里到工具箱，中间只隔几层；干完的动静再沿事件流回到浏览器。层与层之间的事你基本不用管 —— 只有「要不要点头」这一件需要你参与。'
+              : 'A message travels from you to the toolbox through only a few layers, and the activity comes back along the event stream. What happens between layers is mostly none of your business — only "does this need your nod" is.'
+          }
+        </p>
+      </div>
+
+      <ArchDiagram lang={lang} />
+    </div>
+  </section>
+
+  <!-- ============ HITL 演示 ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="hitl">
+        <div class="hitl__intro" data-enter="flip">
+          <span class="eyebrow">Human in the loop</span>
+          <h2>
+            {
+              lang === 'zh'
+                ? '它要动手，会先停下来问'
+                : 'When it wants to act, it stops and asks first'
+            }
+          </h2>
+          <p>
+            {
+              lang === 'zh'
+                ? '当 Agent 要调用被标记为 ask 的工具时，轮次会停住，输入框被一张审批卡取代。批准后从 checkpoint 继续；拒绝的理由写不写都行，写了会回灌给模型。'
+                : 'When an agent calls a tool marked ask, the turn stops and an approval card takes over the input box. Approve and it resumes from the checkpoint; reject with or without a reason — a reason is sent back to the model.'
+            }
+          </p>
+          <ul class="checks">
+            <li>
+              {
+                lang === 'zh'
+                  ? '工具三档：allow 放行 / ask 要点头 / deny 不可用'
+                  : 'Three tiers: allow passes through / ask needs your nod / deny is unavailable'
+              }
+            </li>
+            <li>
+              {lang === 'zh' ? '判定顺序：deny → ask → 兜底 allow' : 'Precedence: deny → ask → fall back to allow'}
+            </li>
+            <li>
+              {
+                lang === 'zh'
+                  ? '外层 deny 是全局禁令，子 Agent 无法放松'
+                  : 'The outer deny is global — a sub agent cannot relax it'
+              }
+            </li>
+          </ul>
+          <p class="hitl__hint">{ui.hint[lang]}</p>
+          <a class="btn btn--ghost btn--sm" href={manualUrl(lang, 'interface')}>{ui.detail[lang]}</a>
+        </div>
+
+        <div data-enter="fade">
+          <ApprovalDemo lang={lang} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 核心能力 ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head section-head--center" data-enter="rise">
+        <span class="eyebrow">{copy.capabilities.eyebrow[lang]}</span>
+        <h2>{copy.capabilities.title[lang]}</h2>
+        <p>{copy.capabilities.lead[lang]}</p>
+      </div>
+
+      <div class="grid grid--3">
+        {
+          copy.capabilities.items.map((c, i) => (
+            <article class="card cap" data-enter="flip" style={`animation-delay:${(i % 3) * 90}ms`}>
+              <h3 class="cap__name">{c.name[lang]}</h3>
+              <p class="cap__desc">{c.desc[lang]}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 出厂 agent ============ -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">{copy.factory.eyebrow[lang]}</span>
+        <h2>{copy.factory.title[lang]}</h2>
+        <p>{copy.factory.lead[lang]}</p>
+      </div>
+
+      <div class="qs reveal">
+        <div class="qs__text">
+          <table class="roles">
+            <thead>
+              <tr>
+                <th>{lang === 'zh' ? '角色' : 'Role'}</th>
+                <th>{lang === 'zh' ? '干什么' : 'What it does'}</th>
+                <th>{lang === 'zh' ? '能写文件' : 'Writes files'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                copy.factory.roles.map((r) => (
+                  <tr>
+                    <td>
+                      <code>{r.role}</code>
+                    </td>
+                    <td>{r.job[lang]}</td>
+                    <td>{r.write[lang]}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <Snippet code={quickstartCode} lang="bash" title="quickstart" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 教程入口 ============ -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head section-head--center" data-enter="rise">
+        <span class="eyebrow">{copy.manual.eyebrow[lang]}</span>
+        <h2>{copy.manual.title[lang]}</h2>
+        <p>{copy.manual.lead[lang]}</p>
+      </div>
+
+      <div class="tutorial" data-enter="rise">
+        <a class="tutorial__main" href={manualUrl(lang)}>
+          <h3>{lang === 'zh' ? '用户手册' : 'User manual'}</h3>
+          <p>{lang === 'zh' ? '十章，从安装到故障排查。' : 'Ten chapters, from installation to troubleshooting.'}</p>
+          <span class="tutorial__more">{copy.manual.more[lang]} →</span>
+        </a>
+
+        <div class="tutorial__list">
+          {
+            featured.map((f, i) => (
+              <a href={manualUrl(lang, f.slug)}>
+                <span class="tutorial__no">{String(i + 1).padStart(2, '0')}</span>
+                <span>{f.label}</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---- Hero ---- */
+  .hero {
+    position: relative;
+    padding: clamp(80px, 12vw, 148px) 0 clamp(60px, 8vw, 96px);
+    overflow: hidden;
+  }
+
+  .hero__scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .hero .container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .hero__badge {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+
+  .hero__title {
+    font-size: clamp(38px, 7.2vw, 72px);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+
+  .hero__lead {
+    max-width: 640px;
+    margin: 0 auto 34px;
+    font-size: clamp(17px, 2.1vw, 22px);
+    color: var(--text-muted);
+  }
+
+  /* 指标块：数字用唯一的强调色，口径跟在旁边 —— 数字抢眼，边界不丢 */
+  .hero__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    max-width: 640px;
+    margin: 0 auto 30px;
+    padding: 14px 24px;
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+    background: var(--accent-soft);
+  }
+
+  .hero__stat-value {
+    font-family: var(--font-mono);
+    font-size: clamp(38px, 5.2vw, 56px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    color: var(--accent);
+  }
+
+  .hero__stat-label {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    text-align: left;
+  }
+
+  .hero__actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hero__note {
+    margin-top: 22px;
+    font-size: 13.5px;
+    color: var(--text-faint);
+  }
+
+  .hero__terminal {
+    max-width: 720px;
+    margin: 52px auto 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #07061f;
+    overflow: hidden;
+    text-align: left;
+    box-shadow: 0 30px 80px -46px rgba(126, 20, 255, 0.8);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__terminal {
+      animation-name: terminal-breathe;
+      animation-duration: 6s;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+    }
+  }
+
+  @keyframes terminal-breathe {
+    0%,
+    100% {
+      box-shadow: 0 30px 80px -46px rgba(126, 20, 255, 0.55);
+    }
+    50% {
+      box-shadow: 0 30px 96px -38px rgba(126, 20, 255, 1);
+    }
+  }
+
+  .terminal__bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .terminal__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--border-strong);
+  }
+
+  .terminal__label {
+    margin-left: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+
+  .terminal__body {
+    margin: 0;
+    padding: 20px 22px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.85;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  .t-prompt {
+    color: var(--accent);
+  }
+
+  .t-dim {
+    color: var(--text-faint);
+  }
+
+  /* ---- 能力 ---- */
+  .cap__name {
+    font-size: 16.5px;
+    margin-bottom: 8px;
+  }
+
+  .cap__desc {
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  /* ---- 三条机制 ---- */
+  .cap__no {
+    display: block;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    opacity: 0.75;
+  }
+
+  /* ---- 边界声明 ---- */
+  .bounds {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+    max-width: 880px;
+  }
+
+  .bound {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .bound__mark {
+    color: var(--accent);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .bound p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  /* ---- HITL ---- */
+  .hitl {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .hitl__intro h2 {
+    font-size: clamp(26px, 3.4vw, 38px);
+    margin-bottom: 16px;
+  }
+
+  .hitl__intro p {
+    color: var(--text-muted);
+    font-size: 15.5px;
+  }
+
+  .hitl__intro code {
+    color: var(--accent);
+  }
+
+  .hitl__intro strong {
+    color: var(--text);
+  }
+
+  .hitl__hint {
+    margin: 18px 0 22px;
+    font-size: 13.5px;
+    color: var(--text-faint);
+  }
+
+  /* ---- 快速开始 ---- */
+  .qs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .qs__text h2 {
+    font-size: clamp(26px, 3.4vw, 38px);
+    margin-bottom: 16px;
+  }
+
+  .qs__text > p {
+    color: var(--text-muted);
+    font-size: 15.5px;
+    margin-bottom: 22px;
+  }
+
+  .qs__text code {
+    color: var(--accent);
+  }
+
+  .qs__text .checks {
+    margin-bottom: 26px;
+  }
+
+  /* ---- 五条硬规则 ---- */
+  .rules {
+    display: grid;
+    gap: 2px;
+    counter-reset: rule;
+  }
+
+  .rule {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 20px;
+    align-items: start;
+    padding: 22px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .rule__no {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    padding-top: 3px;
+  }
+
+  .rule h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .rule p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  .rule code {
+    color: var(--accent);
+  }
+
+  .rule strong {
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  /* ---- 出厂角色表 ---- */
+  .roles {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+
+  .roles th,
+  .roles td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .roles th {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  .roles td {
+    color: var(--text-muted);
+  }
+
+  .roles td:first-child code {
+    color: var(--accent);
+  }
+
+  /* ---- 教程入口 ---- */
+  .tutorial {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .tutorial__main {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding: 26px;
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(28rem 14rem at 0% 0%, rgba(220, 253, 53, 0.1), transparent 70%),
+      var(--surface);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .tutorial__main:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .tutorial__main h3 {
+    font-size: 20px;
+  }
+
+  .tutorial__main p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  .tutorial__more {
+    font-size: 13.5px;
+    color: var(--accent);
+  }
+
+  .tutorial__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .tutorial__list a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .tutorial__list a:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .tutorial__no {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    min-width: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .hitl,
+    .qs,
+    .tutorial {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 32px;
+    }
+  }
+
+  /* 窄屏：指标块改成上下堆叠，数字仍然居中 */
+  @media (max-width: 560px) {
+    .hero__stat {
+      flex-direction: column;
+      gap: 10px;
+      padding: 18px 20px;
+    }
+
+    .hero__stat-label {
+      text-align: center;
+    }
+  }
+</style>
+
+<script>
+  import '../../scripts/scene';
+</script>

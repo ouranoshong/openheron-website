@@ -59,11 +59,21 @@ for (const p of pages) {
       continue;
     }
 
-    const target = rawPath.startsWith('/')
-      ? path.join(dist, rawPath)
-      : path.join(path.dirname(p), rawPath);
-    const candidates = [target, `${target}.html`, path.join(target, 'index.html')];
-    const found = candidates.find((c) => fs.existsSync(c));
+    // 站内 URL 不带尾部斜杠（/zh/manual/commands），
+    // 产物是 build.format: 'file' 的扁平结构（zh/manual/commands.html）。
+    // 去掉尾部斜杠再拼候选，两种写法都能命中。
+    const cleanPath = rawPath.replace(/\/+$/, '');
+    const target = cleanPath.startsWith('/')
+      ? path.join(dist, cleanPath)
+      : path.join(path.dirname(p), cleanPath);
+    const candidates = [
+      target,
+      `${target}.html`,
+      path.join(target, 'index.html'),
+      // 目录式 URL 在 file 格式下映射到 <dir>.html
+      `${target}.html`.replace(/\/([^/]+)$/, '/$1.html'),
+    ];
+    const found = candidates.find((c) => fs.existsSync(c) && fs.statSync(c).isFile());
 
     if (!found) {
       report.push(`页面不存在  ${from}  →  ${url}`);
@@ -72,10 +82,10 @@ for (const p of pages) {
     }
 
     if (frag) {
-      const idFile = found.endsWith('.html')
-        ? found
-        : candidates.find((c) => fs.existsSync(c) && c.endsWith('index.html'));
-      const targetIds = ids.get(idFile) ?? new Set();
+      // found 已经是实际存在的文件；但 file 格式下目录式 URL 落到 <name>.html，
+      // 找 id 时要确认拿到的是同一个文件。
+      const idFile = found.endsWith('.html') ? found : null;
+      const targetIds = idFile ? (ids.get(idFile) ?? new Set()) : new Set();
       if (!targetIds.has(decode(frag))) {
         report.push(`锚点不存在  ${from}  →  ${url}`);
         broken++;

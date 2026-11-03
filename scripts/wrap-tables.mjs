@@ -10,7 +10,7 @@
 
 export function wrapTablesPlugin() {
   return {
-    name: 'heron-wrap-tables',
+    name: 'openheron-wrap-tables',
     element: {
       filter: ['table'],
       visit(node, ctx) {
