@@ -32,6 +32,7 @@ export const nav = {
   commands: { zh: '命令速查', en: 'Commands' } satisfies Dict,
   quickstart: { zh: '快速开始', en: 'Quick start' } satisfies Dict,
   language: { zh: '语言', en: 'Language' } satisfies Dict,
+  github: { zh: 'GitHub', en: 'GitHub' } satisfies Dict,
 } as const;
 
 /** 首页各区块 */

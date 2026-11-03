@@ -16,6 +16,9 @@ const nav = [
   { href: manualUrl(lang, 'commands'), label: copy.commands[lang] },
 ];
 
+/** 仓库地址：指向运行时本体，不是本站 */
+const REPO_URL = 'https://github.com/ouranoshong/openheron';
+
 const current = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) =>
   href === '/' ? current === '/' : current === href || current.startsWith(`${href}/`);
@@ -38,6 +41,15 @@ const isActive = (href: string) =>
           </a>
         ))
       }
+      <a
+        href={REPO_URL}
+        class="nav__link nav__link--external"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {copy.github[lang]}
+        <span class="nav__ext" aria-hidden="true">↗</span>
+      </a>
     </nav>
 
     <div class="header__actions">
@@ -58,6 +70,15 @@ const isActive = (href: string) =>
         </a>
       ))
     }
+    <a
+      href={REPO_URL}
+      class="mobile-nav__link mobile-nav__link--external"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {copy.github[lang]}
+      <span class="nav__ext" aria-hidden="true">↗</span>
+    </a>
     <LangSwitch lang={lang} pathname={Astro.url.pathname} />
     <a class="btn btn--primary" href={manualUrl(lang, 'first-run')}>{copy.quickstart[lang]}</a>
   </div>
@@ -129,6 +150,25 @@ const isActive = (href: string) =>
     color: var(--accent);
   }
 
+  /* 外链：标签后跟一个 ↗，点开新标签页 */
+  .nav__link--external {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nav__ext {
+    font-size: 11px;
+    line-height: 1;
+    color: var(--text-faint);
+    transition: color 0.16s ease, transform 0.16s ease;
+  }
+
+  .nav__link--external:hover .nav__ext {
+    color: var(--accent);
+    transform: translate(1px, -1px);
+  }
+
   .header__actions {
     display: flex;
     align-items: center;
@@ -177,9 +217,14 @@ const isActive = (href: string) =>
     color: var(--accent);
   }
 
+  .mobile-nav__link--external {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
   @media (max-width: 880px) {
-    .nav,
-    .header__github {
+    .nav {
       display: none;
     }
 
