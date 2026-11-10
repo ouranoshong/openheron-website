@@ -135,8 +135,8 @@ export const home = {
       },
       {
         text: {
-          zh: '专家配专模要配对才划算：出厂配置里两个 Agent 共用一个模型，配错模型比不配更浪费。',
-          en: 'Expert-models-only pays off when the pairing is right: the factory configuration has two agents sharing one model. A wrong model pairing wastes more than no pairing.',
+          zh: '专家配专模要配对才划算：出厂四个 Agent 都指向 init 时选定的同一个模型，model 不继承也不回退 —— 想给某个专家换模型，得改它自己那一行。',
+          en: 'Expert-models-only pays off when the pairing is right: all four factory agents point at the single model chosen at init, and model is never inherited or defaulted — to change one expert, edit its own line.',
         } satisfies Dict,
       },
       {
@@ -292,7 +292,7 @@ export const home = {
           zh: '前端 + 单文件二进制',
           en: 'Frontend plus a single binary with the UI embedded',
         } satisfies Dict,
-        code: 'make build',
+        code: 'task build',
       },
       {
         title: { zh: '生成配置', en: 'Generate config' } satisfies Dict,
@@ -315,20 +315,30 @@ export const home = {
   /** 出厂配置 */
   factory: {
     eyebrow: { zh: 'Multi-agent', en: 'Multi-agent' } satisfies Dict,
-    title: { zh: '出厂就两个 Agent', en: 'Two agents from the start' } satisfies Dict,
+    title: { zh: '出厂就四个 Agent', en: 'Four agents from the start' } satisfies Dict,
     lead: {
-      zh: 'openheron init 写出 main 与 task 两个 Agent —— main 的 subagents: [task] 引用 task，少一个就是启动期硬错误，所以总是两个一起写。',
-      en: 'openheron init writes the main and task agents — main references task via subagents: [task], and a missing one is a hard startup error, so they are always written together.',
+      zh: 'openheron init 写下一棵完整配置树：一个入口 Agent 带三个执行专家。main 在 subagents: 里点名这三个，引用不存在的 Agent 或声明成环，都是启动期硬错误。',
+      en: 'openheron init writes a full configuration tree: one entry agent with three execution experts. main names them in subagents:, and a missing reference or a cycle is a hard startup error.',
     } satisfies Dict,
     roles: [
       {
         role: 'main',
-        job: { zh: '只做决策与委派，不自己写文件', en: 'Only decides and delegates, never writes files itself' } satisfies Dict,
+        job: { zh: '理解需求、给方案、按改什么分派、汇总；只拿委派与只读配置工具', en: 'Understands intent, proposes a plan, dispatches by what changes, summarises; holds delegation and read-only config tools only' } satisfies Dict,
         write: { zh: '否', en: 'No' } satisfies Dict,
       },
       {
         role: 'task',
-        job: { zh: '按任务单执行', en: 'Executes against the task order' } satisfies Dict,
+        job: { zh: '通用执行：llm/ tools/ mcps/ server/，外加跨目录核验与排障', en: 'General execution: llm/, tools/, mcps/, server/, plus cross-directory checks and troubleshooting' } satisfies Dict,
+        write: { zh: '能', en: 'Yes' } satisfies Dict,
+      },
+      {
+        role: 'agent-expert',
+        job: { zh: '只管 agents/*.md：frontmatter、模型引用、拓扑与三张清单', en: 'Owns agents/*.md only: frontmatter, model references, topology and the three lists' } satisfies Dict,
+        write: { zh: '能', en: 'Yes' } satisfies Dict,
+      },
+      {
+        role: 'skill-expert',
+        job: { zh: '只管 skills/<name>/SKILL.md，并同步技能的允许清单', en: 'Owns skills/<name>/SKILL.md only, and keeps skill allow-lists in sync' } satisfies Dict,
         write: { zh: '能', en: 'Yes' } satisfies Dict,
       },
     ],

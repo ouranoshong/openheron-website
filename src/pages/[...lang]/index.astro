@@ -29,7 +29,7 @@ const chapters = (await getCollection('manual', (e) => e.data.lang === lang))
 
 const featured = [
   { slug: 'first-run', label: lang === 'zh' ? '第一次使用' : 'First run' },
-  { slug: 'interface', label: lang === 'zh' ? '界面使用' : 'Using the interface' },
+  { slug: 'interface', label: lang === 'zh' ? '界面怎么用' : 'Using the interface' },
   { slug: 'configuration', label: lang === 'zh' ? '配置怎么写' : 'Writing configuration' },
   { slug: 'multi-agent', label: lang === 'zh' ? '多 Agent 与委派' : 'Multiple agents' },
   { slug: 'knowledge-base', label: lang === 'zh' ? '知识库' : 'The knowledge base' },
@@ -38,7 +38,7 @@ const featured = [
 
 const quickstartCode = lang === 'zh'
   ? `# 构建（前端 + 单文件二进制）
-make build
+task build
 
 # 在你的项目里生成最小可运行配置
 cd /your/project && openheron init
@@ -49,7 +49,7 @@ export DEEPSEEK_API_KEY=sk-...
 # 启动，打开 http://localhost:8080
 openheron`
   : `# Build (frontend + a single binary with the UI embedded)
-make build
+task build
 
 # Generate a minimal runnable configuration in your project
 cd /your/project && openheron init
@@ -242,18 +242,18 @@ const terminalBody = lang === 'zh'
             <li>
               {
                 lang === 'zh'
-                  ? '工具三档：allow 放行 / ask 要点头 / deny 不可用'
-                  : 'Three tiers: allow passes through / ask needs your nod / deny is unavailable'
+                  ? '档位只有两档：allow 直接跑 / ask 等你点头'
+                  : 'Two tiers only: allow runs straight through / ask waits for your nod'
               }
             </li>
             <li>
-              {lang === 'zh' ? '判定顺序：deny → ask → 兜底 allow' : 'Precedence: deny → ask → fall back to allow'}
+              {lang === 'zh' ? '没人点名的工具一律先问 —— 默认就是安全的那一档' : 'Anything nobody named asks first — the default is the safe tier'}
             </li>
             <li>
               {
                 lang === 'zh'
-                  ? '外层 deny 是全局禁令，子 Agent 无法放松'
-                  : 'The outer deny is global — a sub agent cannot relax it'
+                  ? '放宽写在工具自己的 allows: 里，收窄写在 Agent 的 tools: 里，两者从不合并'
+                  : 'Widening lives in a tool file’s allows:, narrowing in an agent’s tools: — the two never merge'
               }
             </li>
           </ul>
@@ -344,7 +344,7 @@ const terminalBody = lang === 'zh'
       <div class="tutorial" data-enter="rise">
         <a class="tutorial__main" href={manualUrl(lang)}>
           <h3>{lang === 'zh' ? '用户手册' : 'User manual'}</h3>
-          <p>{lang === 'zh' ? '十章，从安装到故障排查。' : 'Ten chapters, from installation to troubleshooting.'}</p>
+          <p>{lang === 'zh' ? '十章，从安装到常见问题。' : 'Ten chapters, from installation to the FAQ.'}</p>
           <span class="tutorial__more">{copy.manual.more[lang]} →</span>
         </a>
 
