@@ -11,7 +11,7 @@ sourceFile: "user-manual_zh.md"
 **只有三级，不向上查找**：
 
 ```
---config-dir  →  $OPENHERON_CONFIG_DIR  →  <项目根>/.openheron
+--config-dir  →  $OPENHERON_CONFIG_DIR  →  <project-root>/.openheron
 ```
 
 - **默认那一档不存在会帮你创建**。
@@ -22,5 +22,5 @@ sourceFile: "user-manual_zh.md"
 如果默认根下没有 `agents/main.md`，启动会直接告诉你：
 
 ```
-no configuration at /你的项目/.openheron: run `openheron init` to create one
+no configuration at /your/project/.openheron: run `openheron init` to create one
 ```

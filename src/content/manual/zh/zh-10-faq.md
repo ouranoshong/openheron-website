@@ -28,12 +28,25 @@ sourceFile: "user-manual_zh.md"
 混合打分没生效。配好 embedding 模型后重新 `kb index`。
 
 **Q：Agent 调不动 `write_file`？**
-两种可能：它被这个 Agent 的 `disabled_tools` 禁了，或者被全局 `deny` 禁了。
-查 `GET /v2/agents/:agentId` 看生效工具表。默认 `main` 是禁用了
+两种可能：它不在这个 Agent 的 `tools:` 清单里 —— 那模型连看都看不见 —— 或者它
+本来就只是个 `ask` 档工具，而那张审批卡片没人答。查
+`GET /v2/agents/:agentId` 看生效工具表。默认 `main` 是禁用了
 `write_file`/`edit_file`/`execute` 的 —— 出厂配置里它只做编排。
 
 **Q：`/v2/run` 报 `threadId is required`**
 先 `POST /v2/sessions` 建会话。
+
+**Q：模型看不见 MCP 服务器的工具？**
+打开 `/mcps`（见 §6.8）。这个 Agent 没挂载的服务器写着 `unused`；够不着的工具写着
+`blocked`，括号里的理由会点名 `mcps` —— 这个 Agent 没挂载那个 server。
+写着 `unreachable` 的服务器旁边带着出错原因，说清它为什么起不来。
+
+**Q：MCP 服务器起不来？**
+启动报错会点名是哪个文件的哪个字段。`mcps/` 是热的，所以改完下一轮就生效 —— 不用重启。
+
+**Q：面板说某台服务器 `starting`？**
+它正在起：配置一被读到，服务器就在后台起起来。它带来的工具在**下一轮**进来 ——
+按 **Refresh** 就看得见。
 
 **Q：端口被占 / 界面打不开？**
 `listen_addr` 改端口，或用环境变量 `LISTEN_ADDR` 覆盖。

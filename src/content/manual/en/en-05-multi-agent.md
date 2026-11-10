@@ -26,20 +26,21 @@ silent truncation.
 
 ## 5.2 The depth cap
 
-The cap is decided by `agent.max_depth` in `server/config.yaml` together with the same
-key in `policy/limits.yaml`, and **the stricter one wins**. The default `1` means "only
-the entry agent may delegate; a sub-agent may not spawn children".
+The cap is `agent.max_depth` in `server/config.yaml`. The default `1` means "only the
+entry agent may delegate; a sub-agent may not spawn children".
 
 For a deeper delegation chain:
 
 ```yaml
-# policy/limits.yaml
+# .openheron/server/config.yaml
 agent:
   max_depth: 3
 ```
 
 ★ A declared topology that exceeds the cap is a **startup error**, not "truncate to the
 cap and carry on". The latter would make the depth protection meaningless.
+
+★ **`server/` is not hot-reloaded** (§4.5) — a deeper cap needs a restart.
 
 ## 5.3 Several agents in one session
 

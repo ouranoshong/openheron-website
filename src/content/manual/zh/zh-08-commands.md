@@ -9,10 +9,10 @@ sourceFile: "user-manual_zh.md"
 ---
 
 ```
-openheron [--config-dir <path>] [--project-root <path>]   启动服务
-openheron init [选项]                                     生成最小可运行配置
-openheron kb index [--config-dir] [--json] [文件...]       建索引
-openheron kb search [--config-dir] <查询>                  检索
-openheron kb status [--config-dir] [--json]                看索引现状
-openheron version                                         打印版本号
+openheron [--config-dir <path>] [--project-root <path>]   start the server
+openheron init [options]                                   generate a minimal runnable configuration
+openheron kb index [--config-dir] [--json] [files...]      build the index
+openheron kb search [--config-dir] <query>                 search
+openheron kb status [--config-dir] [--json]                inspect the index
+openheron version                                         print the version
 ```

@@ -25,19 +25,21 @@ subagents: [task]
 
 ## 5.2 深度上限
 
-深度上限由 `server/config.yaml` 的 `agent.max_depth` 和 `policy/limits.yaml` 的同名项
-共同决定，**取更严的**。默认 `1`，意思是「只有入口 Agent 能委派，子 Agent 不能再生子」。
+深度上限就是 `server/config.yaml` 里的 `agent.max_depth`。默认 `1`，意思是「只有入口
+Agent 能委派，子 Agent 不能再生子」。
 
 想跑更深的委派链：
 
 ```yaml
-# policy/limits.yaml
+# .openheron/server/config.yaml
 agent:
   max_depth: 3
 ```
 
 ★ 声明的拓扑超过上限是**启动错误**，不是「截断到上限然后继续跑」。
 后者会让深度保护形同虚设。
+
+★ **`server/` 不热重载**（§4.5）—— 上限调深要重启才生效。
 
 ## 5.3 一次会话能同时跑多个 Agent
 

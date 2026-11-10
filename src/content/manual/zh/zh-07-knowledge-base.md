@@ -10,18 +10,22 @@ sourceFile: "user-manual_zh.md"
 
 知识库是**可选**的本地语料检索层：把一批 markdown 文档变成 Agent 能检索的资料。
 
+★ **「corpus」是什么意思。** 「corpus」是信息检索里对「检索系统据以作答的那批文档」的叫法；
+在这里它就是**一个目录**。`corpus_dir` 是知识库要索引的那个目录 —— 一条相对项目根的路径，
+而只有它下面的 `.md` 文件会被索引（`kb/index.go:21`）。
+
 ## 7.1 开启
 
 ```yaml
 # .openheron/tools/kb.yaml
-corpus: docs          # 相对项目根的目录
+corpus_dir: docs      # a directory relative to the project root
 index: default
 model: openai/text-embedding-3-small
 top_k: 8
 ```
 
-- `corpus` **不配就是关闭**。
-- `corpus` **必须是相对项目根的路径**。写绝对路径会**启动报错** ——
+- `corpus_dir` **不配就是关闭**。
+- `corpus_dir` **必须是相对项目根的路径**。写绝对路径会**启动报错** ——
   索引和语料必须同生共死，放到系统目录里的语料会让索引失去意义。
 - `model` 必填，且必须指向一个声明了 `kind: embedding` 的模型，
   否则启动报错（`kb.model ... is not an embedding model`）。
@@ -31,11 +35,11 @@ top_k: 8
 ## 7.2 命令行
 
 ```bash
-openheron kb index                 # 建索引
-openheron kb index docs/a.md       # 只索引指定文件
-openheron kb search "配置根怎么解析"  # 检索
-openheron kb status                # 看索引现状
-openheron kb status --json         # 机器可读
+openheron kb index                 # build the index
+openheron kb index docs/a.md       # index only the given files
+openheron kb search "how is the config root resolved"   # search
+openheron kb status                # inspect the index
+openheron kb status --json         # machine-readable
 ```
 
 三条命令都支持 `--config-dir <path>`，用来指向别的配置根。

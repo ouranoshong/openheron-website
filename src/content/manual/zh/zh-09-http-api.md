@@ -27,10 +27,11 @@ sourceFile: "user-manual_zh.md"
 | POST/GET | `/v2/sessions/:id/files` | 上传 / 列会话工作区文件（单文件上限 32 MiB） |
 | GET | `/v2/project/files` | 列项目根文件（`?q=` `?limit=`） |
 | GET | `/v2/commands` | 斜杠命令清单 |
-| POST | `/v2/run` | **SSE 入口**：提问，或回复审批 |
+| POST | `/v2/run` | **SSE 入口**：提问，或回复审批（见 §6.7） |
 | GET | `/v2/skills` | 技能清单 |
 | GET | `/v2/agents` `/v2/agents/:agentId` | Agent 及其生效工具表 |
-| GET | `/v2/config` | 生效配置 |
+| GET | `/v2/mcps` | 某个 Agent 的 MCP 服务器（`?agent=`）；见 §6.8 |
+| GET | `/v2/config` | 生效配置（其中的 `policy` 字段带着缺省档位与那些不用问的工具名） |
 | GET | `/v2/health` | 健康检查（含 `deferred` 告警） |
 | GET | `/v2/runtime` | 运行时状态 |
 | GET | `/v2/settings` | 可编辑项清单 |
@@ -40,15 +41,15 @@ sourceFile: "user-manual_zh.md"
 ## 9.1 跑一轮
 
 ```bash
-# 1. 建会话
+# 1. Create a session
 curl -s -X POST localhost:8080/v2/sessions \
   -H 'content-type: application/json' -d '{"agentId":"main"}'
 # → {"threadId":"...","state":"idle",...}
 
-# 2. 提问（SSE 流）
+# 2. Ask (SSE stream)
 curl -N -X POST localhost:8080/v2/run \
   -H 'content-type: application/json' \
-  -d '{"threadId":"<上一步的 id>","query":"读一下 README"}'
+  -d '{"threadId":"<the id from step 1>","query":"read the README"}'
 ```
 
 ★ **`threadId` 必填**。不传会得到
@@ -70,7 +71,7 @@ curl -N -X POST localhost:8080/v2/run \
   "threadId": "...",
   "resume": [
     {"interruptId": "...", "payload": {"approved": true}},
-    {"interruptId": "...", "payload": {"approved": false, "reason": "别动那个文件"}}
+    {"interruptId": "...", "payload": {"approved": false, "reason": "do not touch that file"}}
   ]
 }
 ```

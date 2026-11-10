@@ -81,7 +81,7 @@ npm run deploy     # 构建 + 部署到 Cloudflare Pages
 
 ## 部署
 
-已部署到 **Cloudflare Pages**：<https://heron.bytebits.top>（备用地址 <https://openheron-website-381.pages.dev>）
+已部署到 **Cloudflare Pages**：<https://openheron.bytebits.top>（备用地址 <https://openheron-website.pages.dev>）
 
 - 项目名 `openheron-website`，生产分支 `main`，配置见 `wrangler.jsonc`
 - 构建产物是纯静态文件，用 `build.format: 'file'` 输出（`index.html` / `zh/manual/faq.html`），
@@ -89,14 +89,18 @@ npm run deploy     # 构建 + 部署到 Cloudflare Pages
 - 部署前用 `SITE_URL` 注入真实域名，canonical 与 og:image 才是绝对地址：
 
 ```bash
-SITE_URL=https://heron.bytebits.top npm run deploy
+SITE_URL=https://openheron.bytebits.top npm run deploy
 ```
 
 - 重新部署后如果换域名，记得带上新的 `SITE_URL` 重建一次
-- 自定义域名 `heron.bytebits.top` 已在 Pages 项目里挂好（status: active）；DNS 记录由 Pages 侧管理
+- 自定义域名 `openheron.bytebits.top` 已在 Pages 项目里挂好；DNS 记录由 Pages 侧管理
+- 账号下另有一个旧项目 `heron-website`，挂着 `heron.bytebits.top` 与
+  `heron-website-381.pages.dev`，上面是更早的版本 —— **不是本站的部署目标**，别把更新推过去
 - 构建用 `build.format: 'file'`（`index.html` / `zh/manual/faq.html`），对外就是 `/` 与 `/zh/manual/faq`，
   不多一次尾斜杠跳转；canonical 同理要自己把 `.html` / `index.html` 归一化掉
-- 登录凭据在 `~/.config/.wrangler/config/default.toml`（本机，不入库；`.gitignore` 已排除 `.wrangler/` 与 `.dev.vars`）
+- 登录凭据在 Windows 上是 `%APPDATA%\xdg.config\.wrangler\config\default.toml`
+  （Linux/macOS 是 `~/.config/.wrangler/config/default.toml`），不入库；
+  `.gitignore` 已排除 `.wrangler/` 与 `.dev.vars`
 
 `npm run build` 会先跑 `prebuild` → `scripts/build-content.mjs`。
 
@@ -181,7 +185,7 @@ node scripts/make-og.mjs en   # 生成 public/og.en.png
 
 ## 两个可交互点
 
-- 首页审批卡：Approve 走「从 checkpoint 恢复」，Reject 必须写理由（理由会回灌给模型），空理由不会通过
+- 首页审批卡：Approve 走「从 checkpoint 恢复」，Reject 的理由可留空（服务端不强制），写了会回灌给模型
 - 顶部导航：窄屏下折叠为汉堡菜单；正文页侧边栏随滚动高亮当前小节
 
 ## 技术要点

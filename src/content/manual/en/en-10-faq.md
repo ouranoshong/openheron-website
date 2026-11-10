@@ -31,13 +31,28 @@ Run `openheron kb status` first: `lexical-only retrieval` means there are no vec
 and the hybrid score is not in effect. Configure an embedding model and re-index.
 
 **Q: An agent cannot call `write_file`?**
-Two possibilities: it is disabled for that agent by `disabled_tools`, or it is denied
-globally by `deny`. Check `GET /v2/agents/:agentId` for the effective tool table. By
-default `main` has `write_file`/`edit_file`/`execute` disabled — in the factory
-configuration it only orchestrates.
+Two possibilities: it is not in that agent's `tools:` list — then the model does not even
+see it — or it is an `ask` tool and nobody answered the approval card. Check
+`GET /v2/agents/:agentId` for the effective tool table. In the factory configuration
+`main` keeps only the readers and the delegation tool, because it orchestrates and hands
+the writing to `task`.
 
 **Q: `/v2/run` says `threadId is required`**
 Create the session with `POST /v2/sessions` first.
+
+**Q: The model does not see the MCP server's tools?**
+Open `/mcps` (see §6.8). A server the agent does not mount reads `unused`; a tool the agent
+cannot reach reads `blocked`, and the reason names `mcps` — the agent does not mount that
+server. A server that reads `unreachable` carries the error that says why it could not be
+started.
+
+**Q: An MCP server does not start?**
+The startup error names the file and the field. `mcps/` is hot, so a fix takes effect on
+the next turn — no restart.
+
+**Q: The panel says a server is `starting`?**
+It is on its way: the servers are started in the background when the configuration is
+known. The tools it brings join the **next** turn — press **Refresh** to see them.
 
 **Q: The port is taken / the interface will not open?**
 Change the port in `listen_addr`, or override it with the `LISTEN_ADDR` environment

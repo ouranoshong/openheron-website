@@ -31,7 +31,8 @@ publicly, or narrow `listen_addr` to `127.0.0.1`.
 | POST | `/v2/run` | **SSE entry point**: ask a question, or answer an approval (see §6.7) |
 | GET | `/v2/skills` | The skill list |
 | GET | `/v2/agents` `/v2/agents/:agentId` | Agents and their effective tool tables |
-| GET | `/v2/config` | The effective configuration |
+| GET | `/v2/mcps` | The MCP servers of one agent (`?agent=`); see §6.8 |
+| GET | `/v2/config` | The effective configuration (its `policy` field carries the default tier and the names that run without a nod) |
 | GET | `/v2/health` | Health check (includes `deferred` notices) |
 | GET | `/v2/runtime` | Runtime status |
 | GET | `/v2/settings` | The list of editable items |

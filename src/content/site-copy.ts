@@ -161,10 +161,10 @@ export const home = {
     } satisfies Dict,
     items: [
       {
-        name: { zh: '工具权限分两层，永不合并', en: 'Tool permissions have two layers and are never merged' } satisfies Dict,
+        name: { zh: '工具清单与审批档位，从不合并', en: 'Tool lists and approval levels are never merged' } satisfies Dict,
         desc: {
-          zh: '外层 policy/permissions.yaml 定全局 ask / deny，内层每个 Agent 用自己的 disabled_tools 收窄。外层的 deny 对所有 Agent 生效，子 Agent 放松不了它。',
-          en: 'The outer policy/permissions.yaml sets the global ask/deny, and each inner agent narrows it with its own disabled_tools. The outer deny beats the inner one, and a sub agent cannot relax it.',
+          zh: 'Agent 的 tools: 行点名它看得见哪些工具（不写就一个都没有），工具自己文件里的 allows: 行点名哪些不用问，其余一律先问。没有全局权限清单，两处也从不合并。',
+          en: 'An agent’s tools: line names the tools it can see — omit it and it sees none. Each tool file’s allows: line names those that run without asking; everything else asks. There is no global permission list, and the two never merge.',
         } satisfies Dict,
       },
       {
@@ -256,8 +256,8 @@ export const home = {
       {
         name: { zh: '配置热更新', en: 'Hot configuration reload' } satisfies Dict,
         desc: {
-          zh: '改 llm/ agents/ policy/ 保存即生效，不用重启。',
-          en: 'Edit llm/, agents/, policy/ and save — it takes effect without a restart.',
+          zh: '改 agents/ 或 mcps/ 保存即生效，不用重启；server/ 和 skills/ 要重启。',
+          en: 'Edit agents/ or mcps/ and save — no restart needed. server/ and skills/ still require one.',
         } satisfies Dict,
       },
       {
