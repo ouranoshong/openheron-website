@@ -20,7 +20,7 @@ const layers = [
   },
   {
     label: zh ? '接口层' : 'Interface layer',
-    desc: zh ? '一条会话一条常驻运行线 · 事件流式回传' : 'One resident run line per session · streamed events',
+    desc: zh ? 'HTTP 接口 · AG-UI 事件流回传' : 'HTTP interface · AG-UI events streamed back',
   },
   {
     label: zh ? '运行时' : 'Runtime',
@@ -29,7 +29,7 @@ const layers = [
   },
   {
     label: 'agent',
-    desc: zh ? '提示词 · 模型 · 工具 · 子 agent' : 'Prompt · model · tools · sub agents',
+    desc: zh ? '模型 · 工具 · 技能 · MCP · 子 agent' : 'Model · tools · skills · MCP · sub agents',
     mod: 'key',
   },
 ];
@@ -50,7 +50,7 @@ const tools = [
   {
     icon: '✎',
     name: zh ? '改文件 · 执行命令' : 'Edit files · run commands',
-    desc: zh ? '默认要先点头' : 'Needs your nod first',
+    desc: zh ? '破坏性动作 · 尤其要点头' : 'Destructive · especially needs your nod',
     gate: true,
   },
   {
@@ -61,7 +61,17 @@ const tools = [
   {
     icon: '⌕',
     name: zh ? '检索知识库' : 'Search the knowledge base',
-    desc: zh ? '带出处引用' : 'With source citations',
+    desc: zh ? '先给大纲，要哪段再读' : 'An outline first, then read the part you need',
+  },
+  {
+    icon: '⊕',
+    name: zh ? 'MCP 服务器' : 'MCP servers',
+    desc: zh ? '挂一个，拿到它全部工具' : 'Mount one, get all its tools',
+  },
+  {
+    icon: '⚙',
+    name: zh ? '配置工具' : 'Config tools',
+    desc: zh ? '读改自己的配置 · 写要点头' : 'Reads or rewrites its own config',
   },
 ];
 ---
@@ -122,12 +132,12 @@ const tools = [
   </div>
 
   <div class="arch__note">
-    <span class="arch__note-badge">{zh ? '需要你点头的动作' : 'Actions that need your nod'}</span>
+    <span class="arch__note-badge">{zh ? '默认都要点头' : 'Your nod by default'}</span>
     <span class="arch__note-text">
       {
         zh
-          ? '走到「改文件 · 执行命令」这类动作时，这一轮当场停住，界面弹出审批卡；你批准，它从断点继续；你拒绝，理由写不写都行，写了会回灌给它让它换条路走。'
-          : 'When the run reaches an action like "edit files · run commands", it stops on the spot and an approval card appears: approve and it resumes from the checkpoint, reject with or without a reason — a reason is sent back so the agent can take another route.'
+          ? '没人点名的工具一律先问：这一轮当场停住，界面弹出审批卡。只有工具文件里点名放行的才免问 —— 改文件、执行命令这类破坏性动作自然不在其中。你批准，它从断点继续；你拒绝，理由写不写都行，写了会回灌给它让它换条路走。'
+          : 'Every tool nobody named is asked about first: the turn stops on the spot and an approval card appears. Only tools a file exempts run unasked — and editing files or running commands are certainly not among them. Approve and it resumes from the checkpoint; reject with or without a reason, and a reason is sent back so the agent can take another route.'
       }
     </span>
   </div>
@@ -251,15 +261,22 @@ const tools = [
 
   .arch__row--tools {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    /* 六张工具卡排两行三列 —— 卡片更宽，描述里的长句才不至于挤成一条 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     margin-top: 2px;
+    /* 同一排等宽等高、顶部对齐：.arch__row 的 place-items:center 会让
+       高度不同的卡片各自居中，一排卡片就参差了 */
+    align-items: stretch;
+    justify-items: stretch;
   }
 
   .arch__tool {
     display: grid;
     gap: 4px;
     justify-items: center;
+    /* 卡片被拉高后，内容仍居中，不要散开 */
+    align-content: center;
     text-align: center;
     padding: 16px 12px;
     border: 1px solid var(--border);
