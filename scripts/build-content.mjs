@@ -175,7 +175,10 @@ function splitChapters(lines) {
   return starts;
 }
 
-fs.rmSync(OUT_DIR, { recursive: true, force: true });
+// 不整目录删除：章节文件名是稳定的（NN-<slug>.md），逐章覆盖写入即可。
+// 这样也保住了下面「源文件缺失时沿用已有生成内容」的降级 ——
+// 以前先删空目录，那个分支永远读不到旧内容，等于没有兜底。
+fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const summary = [];
 
@@ -248,6 +251,14 @@ for (const lang of LANGS) {
       ].join('\n'),
     );
     written.push({ file: path.basename(file), title: start.title });
+  }
+
+  // 章节变少时旧文件不会被覆盖。只提醒不自动删：删文件在部分环境里会被拦截，
+  // 而且「上游是不是真的少了一章」值得人先确认一眼。
+  const keep = new Set(written.map((w) => w.file));
+  const stale = fs.readdirSync(langDir).filter((f) => f.endsWith('.md') && !keep.has(f));
+  if (stale.length) {
+    console.warn(`[build-content] ${label} 有 ${stale.length} 个旧章节文件待清理：${stale.join(', ')}`);
   }
 
   summary.push({ label, code, count: written.length, written });

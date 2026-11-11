@@ -156,12 +156,12 @@ const terminalBody = lang === 'zh'
   <!-- ============ 边界声明 ============ -->
   <section class="section section--tight">
     <div class="container">
-      <div class="section-head reveal">
+      <div class="section-head" data-enter="rise">
         <span class="eyebrow">{copy.boundaries.eyebrow[lang]}</span>
         <h2>{copy.boundaries.title[lang]}</h2>
       </div>
 
-      <ul class="bounds reveal">
+      <ul class="bounds" data-enter="rise">
         {
           copy.boundaries.items.map((b) => (
             <li class="bound">
@@ -177,13 +177,13 @@ const terminalBody = lang === 'zh'
   <!-- ============ 五条硬规则 ============ -->
   <section class="section section--tight">
     <div class="container">
-      <div class="section-head reveal">
+      <div class="section-head" data-enter="rise">
         <span class="eyebrow">{copy.rules.eyebrow[lang]}</span>
         <h2>{copy.rules.title[lang]}</h2>
         <p>{copy.rules.lead[lang]}</p>
       </div>
 
-      <ol class="rules reveal">
+      <ol class="rules" data-enter="rise">
         {
           copy.rules.items.map((r, i) => (
             <li class="rule">
@@ -293,13 +293,13 @@ const terminalBody = lang === 'zh'
   <!-- ============ 出厂 agent ============ -->
   <section class="section section--tight">
     <div class="container">
-      <div class="section-head reveal">
+      <div class="section-head" data-enter="rise">
         <span class="eyebrow">{copy.factory.eyebrow[lang]}</span>
         <h2>{copy.factory.title[lang]}</h2>
         <p>{copy.factory.lead[lang]}</p>
       </div>
 
-      <div class="qs reveal">
+      <div class="qs" data-enter="rise">
         <div class="qs__text">
           <table class="roles">
             <thead>

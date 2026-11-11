@@ -69,6 +69,24 @@ const altHreflang = lang === 'zh' ? 'en' : 'zh-CN';
     {altHref && <meta property="og:locale:alternate" content={altHref} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#08060d" />
+    <script is:inline>
+      (function () {
+        // 必须在首次绘制之前决定要不要隐藏入场元素。
+        // 若等到 body 末尾的 module 脚本再加 .js-enter，元素会先以最终态出现、
+        // 突然被隐藏、再播放动画 —— 也就是肉眼可见的闪一下。
+        if (
+          matchMedia('(prefers-reduced-motion: no-preference) and (min-width: 751px)').matches &&
+          'IntersectionObserver' in window
+        ) {
+          var root = document.documentElement;
+          root.classList.add('js-enter');
+          // 兜底：万一入场脚本没能接管，别让内容一直藏着。
+          setTimeout(function () {
+            if (!root.classList.contains('js-enter-ready')) root.classList.remove('js-enter');
+          }, 3000);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div class="aura"></div>

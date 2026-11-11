@@ -199,15 +199,20 @@ node scripts/make-og.mjs en   # 生成 public/og.en.png
   - 页面转场：原生 `@view-transition { navigation: auto }`，无客户端路由
   - 入场关键帧：`flip`（卡片从平躺翻起）/ `rise`（向上抹出）/ `tilt` / `fade`
   - 滚动联动：`animation-timeline: view(0px)` + `animation-range`，正文块随滚动遮罩揭示
-- `src/scripts/enter.ts` —— 入场触发器：元素露出 15% 时加 `.is-in`，动画播一次
+- `src/scripts/enter.ts` —— 入场触发器：元素露出 15% 时加 `.is-in`，动画播一次；
+  比视口还高的元素 `intersectionRatio` 永远到不了 0.15，这类只要开始相交就放行
+- `src/layouts/Base.astro` 的 `<head>` 里有一段**同步内联脚本**，在首次绘制之前给 `<html>` 加 `.js-enter`。
+  这一步不能挪进 body 末尾的 module 脚本：否则元素先以最终态出现、突然被隐藏、再播动画，肉眼就是闪一下。
+  脚本带 3 秒兜底 —— 入场脚本没能接管（没打上 `js-enter-ready`）就移除 `.js-enter`，内容不会一直藏着
 - `src/scripts/scene.ts` —— 首屏背景的轨道线稿（canvas，无依赖；DPR 上限 2，出视口/切标签页停手，减弱动效只画一帧）
 
-守住的三条：
+守住的四条：
 
 1. **每个元素的默认态就是最终态** —— 没 JS、开了减弱动效、手机窄屏（<751px）的访问者，
    看到的是完整成品，不会缺内容；
 2. 滚动联动全部包在 `@supports (animation-timeline: view())` 里；
-3. 动画用长写属性 —— 简写 + `animation-timeline` 会被压缩器合成成 Chrome 拒绝的声明。
+3. 动画用长写属性 —— 简写 + `animation-timeline` 会被压缩器合成成 Chrome 拒绝的声明；
+4. `.js-enter` 必须在首次绘制之前加好 —— 隐藏元素的决定不能等到 defer 脚本执行。
 
 ### 内容与样式
 
