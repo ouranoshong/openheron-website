@@ -8,25 +8,19 @@ kind: "manual-chapter"
 sourceFile: "user-manual_zh.md"
 ---
 
-需要 **Go 1.27.1+**（构建用）。
+openheron 是一个自包含的可执行程序 —— 界面已经嵌在二进制里，旁边不需要再装任何东西。
+怎么装，按你的处境挑一条路：
 
-```bash
-git clone https://github.com/ouranoshong/openheron
-cd openheron
-task build
-```
+| 你的处境 | 看哪节 |
+|---|---|
+| 只想尽快用起来 | §1.1 装发布版 |
+| 要改代码 | §1.2 从源码构建 |
+| 在 Windows 上 | §1.3 在 Windows 上 |
+| 想让 agent 的工具够不到你的机器 | §1.4 在沙箱里跑 |
 
-`task build` 会构建前端并把界面**嵌进二进制**，产物是 `bin/openheron` —— 一个自包含的可执行
-文件，扔到哪台机器上都能跑（目标平台之外的机器用交叉编译）。
+## 1.1 装发布版
 
-只想快速试一下：
-
-```bash
-task build-go     # 只构建后端（不含界面），迭代 Go 代码时更快
-```
-
-★ **或者一条命令装上发布出来的二进制。** 每个 `v*` tag 都会发布同样的单文件可执行程序，
-覆盖六个平台 —— 界面是嵌进去的，旁边不需要再装任何东西。一条命令就够了：
+每个 `v*` tag 都发布同样的单文件可执行程序，覆盖六个平台。一条命令就够了：
 
 ```bash
 # Linux / macOS
@@ -39,21 +33,22 @@ irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps
 ```
 
 安装脚本会挑出对应你平台的产物，**用发布页的 `checksums.txt` 校验 sha256**，装进
-`~/.local/bin`。校验不过的下载**不会被安装**。
+`~/.local/bin`（Windows 上是 `%LOCALAPPDATA%\Programs\openheron`）。校验不过的下载
+**不会被安装**。
 
 | 变量 | 作用 |
 |---|---|
 | `OPENHERON_VERSION` | 装指定 tag，而不是最新版 |
-| `INSTALL_DIR` | 装到哪（默认 `~/.local/bin`） |
+| `INSTALL_DIR` | 装到哪（缺省 `~/.local/bin`，Windows 上是 `%LOCALAPPDATA%\Programs\openheron`） |
 | `OPENHERON_REPO` | 从别的 `owner/repo` 装 |
 | `OPENHERON_TOKEN` | 私有仓库用的 token |
 | `OPENHERON_API_URL` | API 主机（默认 `https://api.github.com`；GitHub Enterprise 是 `https://<host>/api/v3`） |
 
-想先看一眼再执行，就从[发布页](https://github.com/ouranoshong/openheron/releases/latest)
+★ 想先看一眼再执行，就从[发布页](https://github.com/ouranoshong/openheron/releases/latest)
 把 `install.sh` 下载下来读一遍 —— 脚本本身就是这个 release 的一部分，就在它装的那些
 二进制旁边。
 
-不用脚本的话，从[发布页](https://github.com/ouranoshong/openheron/releases/latest)取产物，
+**不用脚本的话**，从[发布页](https://github.com/ouranoshong/openheron/releases/latest)取产物，
 并用同目录下的 `checksums.txt` 校验：
 
 | 平台 | 产物 |
@@ -65,7 +60,80 @@ irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps
 | Windows x64 | `openheron_<version>_windows_amd64.zip` |
 | Windows arm64 | `openheron_<version>_windows_arm64.zip` |
 
-## 在沙箱里跑
+```bash
+sha256sum -c checksums.txt --ignore-missing
+```
+
+★ 二进制是静态的（`CGO_ENABLED=0`），所以那个平台上随便哪台机器都能跑 ——
+不用装 Go，不用装 Node，也没有运行时要伺候。
+
+★ 装好之后：跑起来见 §2，密钥怎么设见 §4.2。
+
+## 1.2 从源码构建
+
+要改代码才需要这条。需要 **Go 1.27.1+**，另外还要 [go-task](https://taskfile.dev) 和
+[Bun](https://bun.sh)：界面是用 Bun 构建再嵌进二进制的，所以这两个构建工具不是可选项。
+
+```bash
+git clone https://github.com/ouranoshong/openheron
+cd openheron
+task build
+```
+
+`task build` 会构建前端并把界面**嵌进二进制**，产物是 `bin/openheron` —— 一个自包含的
+可执行文件，扔到哪台机器上都能跑（目标平台之外的机器用交叉编译）。
+
+只想快速试一下：
+
+```bash
+task build-go     # 只构建后端（不含界面），迭代 Go 代码时更快
+```
+
+★ Windows 上的产物是 `bin\openheron.exe` —— 可执行文件在那边保留 `.exe` 后缀。
+而 Windows 上的 `python3` 是 Microsoft Store 的转发器 —— 存在，但什么也不干 ——
+仓库自己的脚本在那边调的是 `python`。这只影响文档校验（`task lint-docs`）。
+
+## 1.3 在 Windows 上
+
+★ **装的位置和 PATH 两处和 Unix 版不一样。** 位置是 `%LOCALAPPDATA%\Programs\openheron`
+（不是 `~/.local/bin`），而且**它不碰你的 PATH**：脚本发现那个目录不在 PATH 上时只打印
+一行提示，所以要么自己加，要么用全路径调用那个可执行文件：
+
+```powershell
+# 把安装目录加进用户 PATH
+$dir = "$env:LOCALAPPDATA\Programs\openheron"
+[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $dir, 'User')
+```
+
+★ 改完**开一个新的终端**：已经开着的 shell 留着它启动时的那份 PATH。
+
+`cmd.exe` 里没有 `irm`，把这一行交给 PowerShell：
+
+```cmd
+powershell -c "irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps1 | iex"
+```
+
+**工具差在哪。** 文件工具（`read_file`、`write_file`、`edit_file`、`ls`、`glob`）是运行时
+自己的代码，在 Windows 上照常工作；只有 `grep` 要额外的
+[ripgrep](https://github.com/BurntSushi/ripgrep)（`rg`）—— 它不自带，没有就会报
+`ripgrep (rg) is not installed or not in PATH`（§10）。
+
+**shell 工具自己找 shell。** `execute` 需要一个程序来跑命令，openheron 在进程启动时按这个
+顺序找：PATH 上的 `sh` 或 `bash` → Git for Windows（`C:\Program Files\Git\usr\bin\bash.exe`）
+与 MSYS2（`C:\msys64\usr\bin\sh.exe`）→ WSL 启动器（`C:\Windows\System32\bash.exe`，
+**排在最后**，因为它把命令跑在 Linux 文件系统里，那边的 `C:\Users` 是 `/mnt/c/Users`）。
+
+★ 每个候选都要跑一条最简单的命令验一下活，所以 Windows 自带的那个 `bash.exe` ——
+每台机器都有，没有 WSL 发行版时什么也不干 —— 不会被当成 shell。第一个能跑的候选就是它；
+在 PATH 之外找到的 shell，它自己那个目录会被放到子进程 PATH 的最前面，于是 `ls` 之类的
+工具也找得到。
+
+★ **一个 POSIX shell 都没有时，工具退回 `cmd.exe`**，而它的描述会告诉模型写 Windows 命令
+（`dir`、`type`、`copy`），而不是 POSIX 的那套（`ls`、`cat`、`cp`）。★ 方言不是猜的：
+模型读到的那段描述与真正跑命令的程序是同一个答案，在启动时一次定下来。另一条路是把
+`execute` 从那个 Agent 的 `tools:` 清单里去掉 —— 出厂配置本来就是这么做的。
+
+## 1.4 在沙箱里跑
 
 ★ **跑 openheron 不止有二进制这一条路。** 如果你希望 agent 的文件工具与
 shell 工具根本够不到你的机器，openheron 有 Docker Sandbox Kit 的形态：
@@ -126,10 +194,3 @@ HOST IP     HOST PORT   SANDBOX PORT   PROTOCOL
 `sandbox-kit/TUTORIAL_zh.md`），
 背后的设计见 `docs/sandbox-kit-design.md` —— 那篇文档只有中文，
 本仓库的设计文档都是这样。
-
-```bash
-sha256sum -c checksums.txt --ignore-missing
-```
-
-★ 二进制是静态的（`CGO_ENABLED=0`），所以那个平台上随便哪台机器都能跑 ——
-不用装 Go，不用装 Node，也没有运行时要伺候。

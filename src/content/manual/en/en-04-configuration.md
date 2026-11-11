@@ -125,7 +125,9 @@ models:
 
 ★ **`api_key` may only be an environment variable name** (`${OPENAI_API_KEY}`) or a file
 reference (`@file:/path`). Writing a literal secret into the configuration makes the
-config editor refuse to save it — secrets do not belong in the repository.
+config editor refuse to save it — secrets do not belong in the repository. ★ The
+`@file:` form needs **quotes** in YAML; the subsection below says where the key comes
+from on each system.
 
 ★ **The compaction threshold belongs to the agent, not to the model.** `context_window` is the
 model's; `summarize_at` is the agent's, because how much of that window this agent fills before
@@ -141,6 +143,98 @@ survive the cut: the summary keeps them.
 "the agent writes `reasoning: high`" and "how this endpoint expresses high". A tier
 missing from the table is silently ignored, so "I turned on high and it still does not
 think" shows up in the most hidden way possible.
+
+### The key: where it comes from
+
+The profile names **where** the secret is — never the secret itself. Two forms work,
+and both are read **when the configuration is loaded**:
+
+```yaml
+# .openheron/llm/deepseek.yaml
+api_key: ${DEEPSEEK_API_KEY}                  # an environment variable
+api_key: "@file:/etc/openheron/deepseek.key"  # the same key, read from a file
+```
+
+★ **The quotes around `@file:` are not optional.** `@` is a reserved character in
+YAML, so an unquoted `api_key: @file:/path` does not parse at all ("found character
+that cannot start any token") and the profile never loads. `${NAME}` needs no quotes.
+
+★ **The key is read when the configuration is loaded** — so set the variable
+**before** you start openheron. A variable you export in another terminal afterwards
+is not seen by the running server; saving the profile file again reloads the
+configuration, and that reload reads the variable once more.
+
+★ **How the variable is set on Windows, see §2.2** — the four ways of writing it in
+PowerShell and cmd.exe, the case-insensitive variable name, and the `@file:` quoting pit
+on Windows are all there.
+
+**macOS and Linux.**
+
+```sh
+export DEEPSEEK_API_KEY=sk-...
+```
+
+To make it permanent, put the line in `~/.zshrc` (macOS), `~/.bashrc` (Linux with
+bash) or `~/.profile` (any POSIX shell).
+
+★ **On macOS and Linux the variable name is case-sensitive.** `$env:deepseek_api_key` is
+another variable there, and the profile then reads
+`api_key env DEEPSEEK_API_KEY is not set`; on Windows it is the other way round
+(§2.2).
+
+★ **The variable has to reach the process, not your login.** A `~/.bashrc` line is
+read by **interactive bash only**: a systemd unit, a launchd job, a container and a CI
+runner each get an environment of their own, and none of them reads your shell's rc
+files. Give it to whatever starts openheron:
+
+| openheron runs in | where the variable goes |
+|---|---|
+| a terminal | `export ...` (macOS and Linux) / `$env:... = ...` (Windows, see §2.2) |
+| a systemd unit (Linux) | `Environment=DEEPSEEK_API_KEY=sk-...` in the unit file, then `systemctl daemon-reload` |
+| a launchd job (macOS) | `EnvironmentVariables` in the job's plist |
+| a container | `docker run -e DEEPSEEK_API_KEY=sk-...`, or `--env-file .env` |
+| CI | the runner's secret store — the variable, not the key |
+
+**The `@file:` form.** The file holds the same secret the variable would, and it is
+read at load time with its content trimmed. Two things to know:
+
+- ★ **A relative path is relative to the directory openheron was started from**, not
+  to the configuration root — use an absolute path.
+- ★ **A path that does not exist is a startup error**, not a reminder:
+  `config: parse llm/deepseek.yaml: api_key: read secret file: open /etc/openheron/deepseek.key: no such file or directory`.
+  The difference is deliberate: an unset variable is a runtime state, a wrong path is
+  a mistake in the configuration.
+
+**How to tell that it worked.** A variable that is not set is named in the startup log:
+
+```
+[main] config notice notice="llm/deepseek.yaml: api_key env DEEPSEEK_API_KEY is not set; calls to this endpoint will fail with 401 Unauthorized"
+```
+
+★ That reminder **does not stop the server**: openheron starts, the agent builds, and
+the endpoint answers `401 Unauthorized` the first time it is called. The same notices
+are under `deferred` in `GET /v2/config` and `GET /v2/health`.
+
+★ **An empty variable is not an unset one.** `DEEPSEEK_API_KEY=` — set, but with
+nothing in it — resolves to an empty key and produces **no reminder at all**, so the
+absence of a notice is not the absence of a problem. The field to look at is
+`hasApiKey` in `GET /v2/config`; the provider entry reads
+
+```json
+{"id":"deepseek","baseUrl":"https://api.deepseek.com","hasApiKey":true,"models":[{"id":"deepseek-flash","contextWindow":1310720}]}
+```
+
+`hasApiKey` is `true` when a key was found and `false` when there is none — and the
+key itself never leaves the process. ★ **How the variable is emptied decides which of
+the two you get**: `$env:DEEPSEEK_API_KEY = ""` leaves an empty value behind (silent),
+while `$env:DEEPSEEK_API_KEY = $null` removes the variable (the reminder appears);
+`export DEEPSEEK_API_KEY=` and `unset DEEPSEEK_API_KEY` are the same pair on a Unix
+shell.
+
+★ **The name of the variable is yours to choose.** `openheron init --env DEEPSEEK_API_KEY`
+writes the profile with `${DEEPSEEK_API_KEY}`, and a profile that names another
+variable needs that other variable in the environment — what matters is that the two
+name the same one.
 
 ## 4.3 Which tools ask
 

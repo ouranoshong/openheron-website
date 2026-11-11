@@ -8,7 +8,76 @@ kind: "manual-chapter"
 sourceFile: "user-manual.md"
 ---
 
-You need **Go 1.27.1+** (to build).
+openheron is a self-contained executable — the interface is embedded in the binary, so
+nothing has to be installed next to it. How you install it depends on where you are:
+
+| Where you are | Read |
+|---|---|
+| You just want to use it | §1.1 Install a release |
+| You are going to change the code | §1.2 Build it from source |
+| You are on Windows | §1.3 On Windows |
+| You want the agent's tools to have no way to reach your machine | §1.4 Running it in a sandbox |
+
+## 1.1 Install a release
+
+Every `v*` tag publishes the same self-contained executable for six platforms. One
+command does the whole thing:
+
+```bash
+# Linux / macOS
+curl -fsSL https://github.com/ouranoshong/openheron/releases/latest/download/install.sh | sh
+```
+
+```powershell
+# Windows
+irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps1 | iex
+```
+
+The installer picks the asset for your platform, **verifies its sha256 against the
+release's `checksums.txt`**, and installs it into `~/.local/bin`
+(`%LOCALAPPDATA%\Programs\openheron` on Windows). A download that does not
+match the checksum is not installed.
+
+| Variable | Effect |
+|---|---|
+| `OPENHERON_VERSION` | Install a specific tag instead of the latest release |
+| `INSTALL_DIR` | Where to install (default `~/.local/bin`, or `%LOCALAPPDATA%\Programs\openheron` on Windows) |
+| `OPENHERON_REPO` | Install from another `owner/repo` |
+| `OPENHERON_TOKEN` | A token, for a private repository |
+| `OPENHERON_API_URL` | The API host (default `https://api.github.com`; a GitHub Enterprise one is `https://<host>/api/v3`) |
+
+★ Prefer to look before you run? Download `install.sh` from the
+[releases page](https://github.com/ouranoshong/openheron/releases/latest) and read it —
+the script is part of the release, next to the binaries it installs.
+
+**Without the script**, take the archive from the
+[releases page](https://github.com/ouranoshong/openheron/releases/latest) and check it
+against the `checksums.txt` next to it:
+
+| Platform | Asset |
+|---|---|
+| Linux x64 | `openheron_<version>_linux_amd64.tar.gz` |
+| Linux arm64 | `openheron_<version>_linux_arm64.tar.gz` |
+| macOS x64 | `openheron_<version>_darwin_amd64.tar.gz` |
+| macOS arm64 | `openheron_<version>_darwin_arm64.tar.gz` |
+| Windows x64 | `openheron_<version>_windows_amd64.zip` |
+| Windows arm64 | `openheron_<version>_windows_arm64.zip` |
+
+```bash
+sha256sum -c checksums.txt --ignore-missing
+```
+
+★ The binary is static (`CGO_ENABLED=0`), so it runs on any machine of that platform —
+no Go, no Node, no runtime to install.
+
+★ Once it is installed: running it is §2, and where the key comes from is §4.2.
+
+## 1.2 Build it from source
+
+You only need this one if you are going to change the code. You need **Go 1.27.1+**
+(to build), plus [go-task](https://taskfile.dev) and [Bun](https://bun.sh): the
+interface is built with Bun and embedded into the binary, so the two build tools are
+not optional.
 
 ```bash
 git clone https://github.com/ouranoshong/openheron
@@ -26,50 +95,60 @@ If you just want to try it quickly:
 task build-go     # backend only (no UI) — faster while iterating on Go code
 ```
 
-★ **Or install a released binary.** Every `v*` tag publishes the same self-contained
-executable for six platforms — the interface is embedded, so nothing has to be installed
-next to it. One command does the whole thing:
+★ On Windows the product is `bin\openheron.exe` — the executable keeps the `.exe` suffix
+there. And `python3` on Windows is the Microsoft Store alias — it exists and runs
+nothing — so the repository's own scripts call `python` there. It only matters for the
+document checks (`task lint-docs`).
 
-```bash
-# Linux / macOS
-curl -fsSL https://github.com/ouranoshong/openheron/releases/latest/download/install.sh | sh
-```
+## 1.3 On Windows
+
+★ **Two things differ from the Unix installer.** The location is
+`%LOCALAPPDATA%\Programs\openheron` — not `~/.local/bin` — and it **does not touch
+your PATH**: the script only prints a hint when that directory is not on it. Add it
+yourself, or call the binary by its full path:
 
 ```powershell
-# Windows
-irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps1 | iex
+# put the install directory on the user PATH
+$dir = "$env:LOCALAPPDATA\Programs\openheron"
+[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $dir, 'User')
 ```
 
-The installer picks the asset for your platform, **verifies its sha256 against the
-release's `checksums.txt`**, and installs it into `~/.local/bin`. A download that does
-not match the checksum is not installed.
+★ Open a **new** terminal afterwards: a shell keeps the PATH it started with.
 
-| Variable | Effect |
-|---|---|
-| `OPENHERON_VERSION` | Install a specific tag instead of the latest release |
-| `INSTALL_DIR` | Where to install (default `~/.local/bin`) |
-| `OPENHERON_REPO` | Install from another `owner/repo` |
-| `OPENHERON_TOKEN` | A token, for a private repository |
-| `OPENHERON_API_URL` | The API host (default `https://api.github.com`; a GitHub Enterprise one is `https://<host>/api/v3`) |
+From `cmd.exe` there is no `irm`, so hand the line to PowerShell:
 
-Prefer to look before you run? Download `install.sh` from the
-[releases page](https://github.com/ouranoshong/openheron/releases/latest) and read it —
-the script is part of the release, next to the binaries it installs.
+```cmd
+powershell -c "irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps1 | iex"
+```
 
-Without the script, take the archive from the
-[releases page](https://github.com/ouranoshong/openheron/releases/latest) and check it
-against the `checksums.txt` next to it:
+**Where the tools differ.** The file tools (`read_file`, `write_file`, `edit_file`,
+`ls` and `glob`) are the runtime's own code, and they work on Windows as they are;
+only `grep` needs [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) on top —
+Windows does not ship it, and without it you get
+`ripgrep (rg) is not installed or not in PATH` (§10).
 
-| Platform | Asset |
-|---|---|
-| Linux x64 | `openheron_<version>_linux_amd64.tar.gz` |
-| Linux arm64 | `openheron_<version>_linux_arm64.tar.gz` |
-| macOS x64 | `openheron_<version>_darwin_amd64.tar.gz` |
-| macOS arm64 | `openheron_<version>_darwin_arm64.tar.gz` |
-| Windows x64 | `openheron_<version>_windows_amd64.zip` |
-| Windows arm64 | `openheron_<version>_windows_arm64.zip` |
+**The shell tool finds a shell by itself.** `execute` needs a program to run the
+command in, and openheron looks for one when the process starts, in this order: `sh`
+or `bash` on PATH → Git for Windows (`C:\Program Files\Git\usr\bin\bash.exe`) and
+MSYS2 (`C:\msys64\usr\bin\sh.exe`) → the WSL launcher
+(`C:\Windows\System32\bash.exe`, **last**, because it runs the command in a Linux
+filesystem, where `C:\Users` is `/mnt/c/Users`).
 
-## Running it in a sandbox
+★ Each candidate is checked by running one trivial command, so the `bash.exe`
+that ships with Windows — it is on every machine and does nothing without a
+WSL distribution — is not mistaken for a shell. The first candidate that runs
+wins, and a shell found outside PATH gets its own directory put first in the
+child's PATH, so `ls` and its neighbours are found.
+
+★ **With no POSIX shell at all the tool falls back to `cmd.exe`**, and its
+description tells the model to write Windows commands (`dir`, `type`, `copy`)
+rather than POSIX ones (`ls`, `cat`, `cp`). ★ The dialect is never a guess:
+the description the model reads and the program that runs the command are the
+same answer, decided once at startup. The other way out is to leave `execute`
+out of that agent's `tools:` list — the factory configuration already does
+that.
+
+## 1.4 Running it in a sandbox
 
 ★ **The binary is not the only way to run openheron.** If you would rather the
 agent's file and shell tools could not reach your machine at all, openheron
@@ -136,10 +215,3 @@ same agent.
 `sandbox-kit/TUTORIAL_zh.md`), and the design
 behind it is in `docs/sandbox-kit-design.md` — that document is
 Chinese only, like every design document in this repository.
-
-```bash
-sha256sum -c checksums.txt --ignore-missing
-```
-
-★ The binary is static (`CGO_ENABLED=0`), so it runs on any machine of that platform —
-no Go, no Node, no runtime to install.

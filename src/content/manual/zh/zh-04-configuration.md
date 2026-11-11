@@ -116,7 +116,8 @@ models:
 | `extra` | 厂商级方言，透传给所有请求 |
 
 ★ **`api_key` 只能写环境变量名**（`${OPENAI_API_KEY}`）或文件引用（`@file:/path`）。
-在配置里写字面量密钥，配置编辑器会直接拒绝保存 —— 密钥不该进仓库。
+在配置里写字面量密钥，配置编辑器会直接拒绝保存 —— 密钥不该进仓库。★ `@file:`
+这种写法在 YAML 里**必须加引号**；下面那节讲各系统的密钥从哪来。
 
 ★ **压缩阈值属于 Agent，不属于模型。** `context_window` 是模型的；`summarize_at` 是 Agent 的 ——
 这个 Agent 把自己的上下文填到多少才压缩，是它自己的策略。同一个模型可以服务多个策略不同的
@@ -128,6 +129,86 @@ Agent。模型档案里留着的 `summarize_at` 不再被读，openheron 加载�
 ★ **`reasoning` 档位表不是可选的**。它是「Agent 写 `reasoning: high`」与
 「这个端点怎么表达 high」之间的翻译层。表里没有的档位会被静默忽略，
 于是「开了 high 档却不思考」这个坑会以最隐蔽的方式出现。
+
+### 密钥从哪来
+
+档案只写**密钥在哪**，从不写密钥本身。有两种写法，两种都在**加载配置时**读取：
+
+```yaml
+# .openheron/llm/deepseek.yaml
+api_key: ${DEEPSEEK_API_KEY}                  # 一个环境变量
+api_key: "@file:/etc/openheron/deepseek.key"  # 同一个密钥，从文件读
+```
+
+★ **`@file:` 的引号不能省。** `@` 是 YAML 的保留字符，不加引号的
+`api_key: @file:/path` 根本解析不了（"found character that cannot start any token"），
+那个档案永远加载不上。`${NAME}` 不需要引号。
+
+★ **密钥是在加载配置时读的** —— 所以要在**启动 openheron 之前**把变量设好。
+事后再在另一个终端里 export，运行中的服务看不到它；把档案重新保存一次会重载配置，
+重载时会再读一遍这个变量。
+
+★ **Windows 上怎么设这个变量，见 §2.2** —— PowerShell 与 cmd.exe 的四种写法、
+「变量名不区分大小写」，还有 `@file:` 在 Windows 上的引号坑，都在那里。
+
+**macOS 与 Linux。**
+
+```sh
+export DEEPSEEK_API_KEY=sk-...
+```
+
+想长期有效，就把这一行写进 `~/.zshrc`（macOS）、`~/.bashrc`（Linux 上的 bash）
+或 `~/.profile`（任何 POSIX shell）。
+
+★ **macOS 与 Linux 上变量名区分大小写。** `$env:deepseek_api_key` 在那边是另一个变量，
+那边档案会读到 `api_key env DEEPSEEK_API_KEY is not set`；Windows 上相反，不区分（§2.2）。
+
+★ **变量要到达的是进程，不是你的登录会话。** `~/.bashrc` 那一行只有**交互式 bash**
+会读：systemd 单元、launchd 作业、容器和 CI runner 各自有自己的环境，
+它们都不读你的 shell 的 rc 文件。要把它交给真正启动 openheron 的那个东西：
+
+| openheron 跑在哪 | 变量放哪 |
+|---|---|
+| 终端里 | `export ...`（macOS 与 Linux）/ `$env:... = ...`（Windows，见 §2.2） |
+| systemd 单元（Linux） | 单元文件里的 `Environment=DEEPSEEK_API_KEY=sk-...`，然后 `systemctl daemon-reload` |
+| launchd 作业（macOS） | 作业 plist 里的 `EnvironmentVariables` |
+| 容器里 | `docker run -e DEEPSEEK_API_KEY=sk-...`，或 `--env-file .env` |
+| CI | runner 自己的密钥库 —— 存变量，不是存密钥 |
+
+**`@file:` 这种写法。** 文件里放的就是那个变量本来装的密钥，在加载时读，内容会去掉首尾空白。
+两件事要知道：
+
+- ★ **相对路径是相对启动 openheron 时所在的那个目录**，不是相对配置根 —— 用绝对路径。
+- ★ **路径不存在是启动错误**，不是提醒：
+  `config: parse llm/deepseek.yaml: api_key: read secret file: open /etc/openheron/deepseek.key: no such file or directory`。
+  这个区别是刻意的：变量没设是运行期状态，路径写错是配置本身写错了。
+
+**怎么知道配好了。** 哪个变量没设，启动日志会点名：
+
+```
+[main] config notice notice="llm/deepseek.yaml: api_key env DEEPSEEK_API_KEY is not set; calls to this endpoint will fail with 401 Unauthorized"
+```
+
+★ 这条提醒**不会拦住服务**：openheron 照常起来，Agent 照常建起来，
+而那个端点第一次被调用时回的是 `401 Unauthorized`。同一批提醒也在
+`GET /v2/config` 与 `GET /v2/health` 的 `deferred` 里。
+
+★ **变量设成空串不等于没设。** `DEEPSEEK_API_KEY=` —— 设了，但里面是空的 ——
+会解析成一个空密钥，而且**一条提醒都不会有**，所以没有提醒不等于没有问题。
+要看的是 `GET /v2/config` 里的 `hasApiKey` 字段，那个 provider 条目长这样：
+
+```json
+{"id":"deepseek","baseUrl":"https://api.deepseek.com","hasApiKey":true,"models":[{"id":"deepseek-flash","contextWindow":1310720}]}
+```
+
+找到密钥时 `hasApiKey` 是 `true`，没有密钥时是 `false` —— 而密钥本身永远不出进程。
+★ **把变量掏空的方式决定了你落在哪一种**：`$env:DEEPSEEK_API_KEY = ""` 会留下一个
+空值（静默），`$env:DEEPSEEK_API_KEY = $null` 是把变量删掉（提醒照常出现）；
+Unix shell 上是 `export DEEPSEEK_API_KEY=` 与 `unset DEEPSEEK_API_KEY` 这一对。
+
+★ **变量名是你自己定的。** `openheron init --env DEEPSEEK_API_KEY`
+会把档案写成 `${DEEPSEEK_API_KEY}`；档案写了别的变量名，环境里就得有那个变量 ——
+要紧的是两边说的是同一个。
 
 ## 4.3 哪些工具要问
 

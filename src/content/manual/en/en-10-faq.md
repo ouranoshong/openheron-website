@@ -62,3 +62,18 @@ variable.
 `GET /v2/config` returns the effective configuration; `GET /v2/health` returns the
 health status and any `deferred` notices; `GET /v2/runtime` returns the runtime status.
 The startup log also prints the config root path.
+
+**Q: On Windows the agent's shell tool fails, or runs commands the model wrote
+for another system?**
+The `execute` tool picks its shell when the server starts — see §1.3 ("On
+Windows"). It prefers a POSIX shell and falls back to `cmd.exe` when the
+machine has none; either way the tool's description tells the model which
+dialect to write, so the command is written for the shell that runs it.
+★ The startup log names the shell it picked.
+
+**Q: Is the `grep` tool weaker without ripgrep?**
+It searches with its own engine: the same regular expressions, the same caps, the same
+budget, and the same answer to "is this file there". What it does not do is read
+`.gitignore`, and it knows fewer file types — a type it does not know is refused
+rather than guessed at. ★ The startup log names the engine that was picked; install
+ripgrep to get the other one.
