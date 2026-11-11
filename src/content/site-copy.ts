@@ -291,7 +291,8 @@ export const home = {
       {
         name: { zh: '斜杠命令与技能', en: 'Slash commands and skills' } satisfies Dict,
         desc: {
-          zh: '/new、/stop、/compact、/review、/fix、/explain、/test、/attach、/agents、/mcps 开箱可用；技能可自建。',
+          // 命令之间用空格而不是顿号：中文顿号不是断行机会，窄卡片里只能把命令从中间劈开。
+          zh: '/new /stop /compact /review /fix /explain /test /attach /agents /mcps 开箱可用；技能可自建。',
           en: '/new, /stop, /compact, /review, /fix, /explain, /test, /attach, /agents and /mcps out of the box; skills are yours to define.',
         } satisfies Dict,
       },

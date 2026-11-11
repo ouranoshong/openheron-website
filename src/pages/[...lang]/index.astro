@@ -533,6 +533,10 @@ const terminalBody = lang === 'zh'
   .cap__desc {
     font-size: 14.5px;
     color: var(--text-muted);
+    /* 卡片宽度有限，长串（命令名、工具名）必须允许折行。
+       用 anywhere 而不是 break-word：后者不影响 min-content 计算，
+       一整段长串仍会把整页撑宽（曾把 375px 的视口撑到 602px）。 */
+    overflow-wrap: anywhere;
   }
 
   /* ---- 三条机制 ---- */
