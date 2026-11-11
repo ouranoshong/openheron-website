@@ -102,15 +102,21 @@ const nav = [
     background: rgba(4, 3, 25, 0.78);
   }
 
-  /* 参考主题的招牌细节：分隔线从内容左边缘一直延伸到屏幕右边缘 */
+  /* 页头下沿的分隔线：横贯全宽，两端渐隐。
+     ★ 原来这条线只从内容左边缘画到屏幕右边缘 —— 一头对齐 logo、一头贴边，
+       全站唯一一头齐一头不齐的横线（页脚顶线是全宽的，页脚内线是对齐容器的）。
+       改成全宽后左右对称，再用遮罩把两端淡出：硬边横线会把页面切成两半，
+       渐隐则像页头自身的边界，而不是一道横杠。 */
   .header::after {
     content: '';
     position: absolute;
-    left: max(24px, calc((100% - var(--container)) / 2));
+    left: 0;
     right: 0;
     bottom: 0;
     height: 1px;
     background: var(--border);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
   }
 
   .header__inner {
