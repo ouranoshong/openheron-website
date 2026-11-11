@@ -79,6 +79,9 @@ const chapters = await Promise.all(
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
     align-items: start;
+    /* 卡片入场时是绕 X 轴的 3D 翻转，perspective 投影会让它的视觉盒
+       短暂超出网格，把整页撑出横向滚动条。横向裁掉即可，纵向不动。 */
+    overflow-x: clip;
   }
 
   .chapter-card {

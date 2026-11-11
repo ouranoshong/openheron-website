@@ -34,6 +34,9 @@
 
   --container: 1160px;
   --header-h: 72px;
+  /* 页头下方到首屏内容的留白：首页、手册索引、手册章节共用同一个值，
+     三页的视觉间距才一致。改这里就能一次改三页。 */
+  --page-top: clamp(64px, 9vw, 112px);
 }
 
 /* ---------- reset ---------- */
@@ -47,6 +50,10 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 24px);
   -webkit-text-size-adjust: 100%;
+  /* 始终预留滚动条位置：否则「内容短、装得下整页」的那个页面（手册索引）
+     会比长页面多出 15px 可用宽度，居中的 .header__inner 就会横向偏 7.5px，
+     三页切换时页头会「跳」一下。 */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -159,7 +166,9 @@ svg {
 }
 
 .eyebrow {
-  display: inline-flex;
+  /* 块级而非 inline-flex：行内盒会坐在行盒里，盒顶边比容器 padding 边缘低几像素，
+     三页的首个标签就对不齐了。改块级后首页 / 手册索引 / 手册章节的标签齐平。 */
+  display: flex;
   align-items: center;
   gap: 10px;
   font-family: var(--font-mono);
@@ -168,6 +177,11 @@ svg {
   text-transform: uppercase;
   color: var(--accent);
   margin-bottom: 20px;
+}
+
+/* 之前靠 text-align:center 让行内标签居中，改成块级后要自己居中 */
+.section-head--center .eyebrow {
+  justify-content: center;
 }
 
 .eyebrow::before {
@@ -503,7 +517,7 @@ th code {
 
 /* ---------- 页面级 ---------- */
 .page-head {
-  padding: clamp(64px, 9vw, 112px) 0 clamp(32px, 4vw, 48px);
+  padding: var(--page-top) 0 clamp(32px, 4vw, 48px);
 }
 
 .page-head h1 {
@@ -599,7 +613,10 @@ th code {
   background: var(--accent-soft);
   border-radius: 5px;
   padding: 1px 6px;
-  white-space: nowrap;
+  /* 行内代码允许在放不下时折行：否则一个长路径/长命令会把整页撑宽
+     （nowrap 时 overflow-wrap 不起作用，min-content 还会沿祖先链传导）。 */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .prose pre {

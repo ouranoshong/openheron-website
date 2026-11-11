@@ -54,7 +54,7 @@ const isActive = (href: string) =>
 
     <div class="header__actions">
       <LangSwitch lang={lang} pathname={Astro.url.pathname} />
-      <a class="btn btn--primary btn--sm" href={manualUrl(lang, 'first-run')}>{copy.quickstart[lang]}</a>
+      <a class="btn btn--primary btn--sm header__cta" href={manualUrl(lang, 'first-run')}>{copy.quickstart[lang]}</a>
     </div>
 
     <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
@@ -119,6 +119,8 @@ const isActive = (href: string) =>
     font-weight: 700;
     font-size: 18px;
     letter-spacing: -0.02em;
+    /* 不参与收缩：窄屏时宁可换行也不要压扁品牌 */
+    flex: none;
   }
 
   .brand__mark {
@@ -173,6 +175,7 @@ const isActive = (href: string) =>
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: none;
   }
 
   .nav-toggle {
@@ -231,14 +234,29 @@ const isActive = (href: string) =>
     .nav-toggle {
       display: flex;
       margin-left: auto;
+      /* 菜单按钮不参与收缩：被压扁的按钮既难看又会顶出容器 */
+      flex: none;
     }
 
     .header__actions {
       margin-left: auto;
     }
 
+    /* 窄屏放不下「品牌 + 语言切换 + 快速开始 + 菜单」四件套，
+       快速开始在展开的移动菜单底部本来就有同一个按钮，这里先收起来。 */
+    .header__cta {
+      display: none;
+    }
+
     .mobile-nav {
       display: flex;
+    }
+  }
+
+  /* 更窄的手机：品牌只留图标，避免整条页头撑破视口 */
+  @media (max-width: 420px) {
+    .brand__name {
+      display: none;
     }
   }
 </style>

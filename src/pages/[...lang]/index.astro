@@ -301,28 +301,30 @@ const terminalBody = lang === 'zh'
 
       <div class="qs" data-enter="rise">
         <div class="qs__text">
-          <table class="roles">
-            <thead>
-              <tr>
-                <th>{lang === 'zh' ? '角色' : 'Role'}</th>
-                <th>{lang === 'zh' ? '干什么' : 'What it does'}</th>
-                <th>{lang === 'zh' ? '能写文件' : 'Writes files'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                copy.factory.roles.map((r) => (
-                  <tr>
-                    <td>
-                      <code>{r.role}</code>
-                    </td>
-                    <td>{r.job[lang]}</td>
-                    <td>{r.write[lang]}</td>
-                  </tr>
-                ))
-              }
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="roles">
+              <thead>
+                <tr>
+                  <th>{lang === 'zh' ? '角色' : 'Role'}</th>
+                  <th>{lang === 'zh' ? '干什么' : 'What it does'}</th>
+                  <th>{lang === 'zh' ? '能写文件' : 'Writes files'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  copy.factory.roles.map((r) => (
+                    <tr>
+                      <td>
+                        <code>{r.role}</code>
+                      </td>
+                      <td>{r.job[lang]}</td>
+                      <td>{r.write[lang]}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div>
@@ -367,7 +369,7 @@ const terminalBody = lang === 'zh'
   /* ---- Hero ---- */
   .hero {
     position: relative;
-    padding: clamp(80px, 12vw, 148px) 0 clamp(60px, 8vw, 96px);
+    padding: var(--page-top) 0 clamp(60px, 8vw, 96px);
     overflow: hidden;
   }
 
