@@ -117,6 +117,9 @@ const sections = headings.filter((h) => h.depth === 2);
   .manual-body {
     flex: 1 1 auto;
     min-width: 0;
+    /* 窄屏切成 column + align-items:flex-start 后，不写宽度会让这一栏按内容宽度
+       取满 max-width —— 只有代码块且代码行很长的章节（命令行速查）就会把整页撑宽。 */
+    width: 100%;
     max-width: 780px;
   }
 
