@@ -242,8 +242,22 @@ export const home = {
       {
         name: { zh: '多 Agent 委派', en: 'Multi-agent delegation' } satisfies Dict,
         desc: {
-          zh: '一个主 Agent 把活分给子 Agent（只读检索 / 改代码 / 审阅），可并行。',
-          en: 'A parent agent splits work among sub agents (read-only retrieval / coding / review), in parallel where independent.',
+          zh: '主 Agent 把活派给子 Agent（task 执行、agent-expert 域专家、skill-expert 技能专家），互不依赖的活并行跑，用量按 Agent 分账。',
+          en: 'A parent agent hands work to sub agents — task executes, agent-expert handles a domain, skill-expert applies a skill — running independent jobs in parallel, with usage billed per agent.',
+        } satisfies Dict,
+      },
+      {
+        name: { zh: 'MCP 服务器', en: 'MCP servers' } satisfies Dict,
+        desc: {
+          zh: '在 mcps/ 里挂服务器，Agent 用 frontmatter 的 mcps: 键点名领用；服务器的工具以 mcp__github__create_issue 这样的名字出现在它面前。',
+          en: 'Mount servers under mcps/ and let an agent claim them by name in its frontmatter mcps: key; their tools arrive as mcp__github__create_issue.',
+        } satisfies Dict,
+      },
+      {
+        name: { zh: '配置工具', en: 'Config tools' } satisfies Dict,
+        desc: {
+          zh: '六个工具让 Agent 读改自己跑在其中的那份配置：能查、能校验到出错的那一行、也能写 —— 写要点头。',
+          en: 'Six tools let an agent read and rewrite the configuration it runs in: inspect it, validate a draft down to the offending line, or write it back — writes still need your nod.',
         } satisfies Dict,
       },
       {
@@ -263,15 +277,22 @@ export const home = {
       {
         name: { zh: '图形化配置编辑器', en: 'Graphical config editor' } satisfies Dict,
         desc: {
-          zh: '界面里直接编辑配置文件，写入前自动校验。',
-          en: 'Edit configuration files in the interface, validated before writing.',
+          zh: '界面里直接编辑配置文件，写入前预检到具体行；明文密钥直接拒绝保存。',
+          en: 'Edit configuration files in the interface; a draft is pre-checked down to the offending line, and literal secrets are refused outright.',
+        } satisfies Dict,
+      },
+      {
+        name: { zh: '发附件', en: 'Attachments' } satisfies Dict,
+        desc: {
+          zh: '回形针、拖拽、粘贴三个入口。图片直接进模型看得见；二进制会如实说处理不了，而不是假装读过。',
+          en: 'Paperclip, drag or paste. Images reach the model as images it can see; binaries are told plainly they cannot be read, instead of pretending.',
         } satisfies Dict,
       },
       {
         name: { zh: '斜杠命令与技能', en: 'Slash commands and skills' } satisfies Dict,
         desc: {
-          zh: '/review、/explain、/fix 等开箱可用；技能可自建。',
-          en: '/review, /explain, /fix and more out of the box; skills are yours to define.',
+          zh: '/new、/stop、/compact、/review、/fix、/explain、/test、/attach、/agents、/mcps 开箱可用；技能可自建。',
+          en: '/new, /stop, /compact, /review, /fix, /explain, /test, /attach, /agents and /mcps out of the box; skills are yours to define.',
         } satisfies Dict,
       },
     ],
