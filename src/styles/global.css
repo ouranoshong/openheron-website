@@ -617,6 +617,13 @@ th code {
   overflow-x: auto;
 }
 
+/* 整章正文只有一个代码块时（如「命令行速查」）：代码块自带的 20px 左右内边距
+   会让文字比其它章节的段落窄一圈，看上去像整页缩进、内容宽度也对不齐。
+   让边框向两侧各让出 20px —— 文字正好落在正文栏的边界上，宽度与其它页面一致。 */
+.prose > pre:only-child {
+  margin-inline: -20px;
+}
+
 .prose pre.astro-code code {
   background: none;
   border: none;
