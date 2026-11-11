@@ -374,23 +374,14 @@ export const home = {
       zh: '十章，按需查阅。每一章都能直达小节。',
       en: 'Ten chapters, reference as needed. Every chapter links straight to its sections.',
     } satisfies Dict,
-    more: { zh: '查看全部十章', en: 'Browse all ten chapters' } satisfies Dict,
+    more: { zh: '从第一次使用开始', en: 'Start with first run' } satisfies Dict,
   },
 } as const;
 
-/** 手册索引页 */
+/** 手册章节页 */
 export const manualPage = {
-  eyebrow: { zh: 'User manual', en: 'User manual' } satisfies Dict,
-  title: { zh: 'openheron 用户手册', en: 'openheron user manual' } satisfies Dict,
-  lead: {
-    zh: '面向使用者：怎么装、怎么配、怎么用。内部设计与取舍不在这里 —— 本手册描述的行为以仓库当前代码为准。',
-    en: 'Written for users: how to install, configure and use. Internal design and trade-offs are not here — the behaviour described follows the code as it stands.',
-  } satisfies Dict,
-  note: {
-    zh: '手册原文按章拆开，每章一页。左边目录列出全部小节，滚动时会跟着高亮当前小节。',
-    en: 'The manual is split by chapter, one chapter per page. The sidebar lists every section and highlights the current one as you scroll.',
-  } satisfies Dict,
-  backToManual: { zh: '用户手册', en: 'User manual' } satisfies Dict,
+  backHome: { zh: '返回首页', en: 'Back to home' } satisfies Dict,
+  backToStart: { zh: '快速开始', en: 'Quick start' } satisfies Dict,
   chapters: { zh: '章', en: 'Chapter' } satisfies Dict,
   sections: { zh: '本章小节', en: 'Sections' } satisfies Dict,
   toc: { zh: '目录', en: 'Contents' } satisfies Dict,

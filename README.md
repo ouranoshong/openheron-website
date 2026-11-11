@@ -36,11 +36,11 @@ openheron 是一个**跑在本地、配置是文件的多 Agent 运行时** —�
 
   对比度实测：正文 6.71:1、标题 17.53:1、强调色文字与按钮 17.58:1、最次要标签 5.91:1 —— 全部过 AA。
 
-  **三页对齐的两条布局约定**（改版时别破坏）：
+  **两页对齐的两条布局约定**（改版时别破坏）：
 
   1. `--page-top` 是页头下方到首屏内容的唯一留白基准（`clamp(64px, 9vw, 112px)`），
-     首页 hero、手册索引 `.page-head`、手册章节 `.manual-shell` 三处共用，改一处即三页同步。
-  2. `html` 上有 `scrollbar-gutter: stable`：否则「内容短、装得下整页」的手册索引页
+     首页 hero 与手册章节 `.manual-shell` 两处共用，改一处即两页同步。
+  2. `html` 上有 `scrollbar-gutter: stable`：否则「内容短、装得下整页」的页面
      会比长页面多 15px 可用宽度，居中的 `.header__inner` 就横向偏 7.5px，切换页面时页头会跳。
 
   配套的窄屏约束：≤880px 收起页头里的「快速开始」按钮（移动菜单底部有同一个），
@@ -154,8 +154,8 @@ OPENHERON_REPO=/path/to/openheron npm run build
 |---|---|
 | `/` | 英文首页（默认语言） |
 | `/zh` | 中文首页 |
-| `/manual` `/zh/manual` | 用户手册索引 |
-| `/manual/<slug>` `/zh/manual/<slug>` | 章节正文 |
+| `/manual` `/zh/manual` | 手册入口的旧目录地址 —— 301 跳到 `first-run` |
+| `/manual/<slug>` `/zh/manual/<slug>` | 章节正文（`first-run` 是入口章节） |
 
 - 语言定义与 URL 规则在 `src/i18n.ts`（单一事实源）
   —— 改默认语言就改这里的 `DEFAULT_LANG`：默认语言不带前缀，另一种语言挂在 `/<lang>` 下
@@ -171,8 +171,11 @@ OPENHERON_REPO=/path/to/openheron npm run build
 | 路径 | 内容 |
 |---|---|
 | `/` `/zh` | 首页：定位、终端演示、**三条省 token 机制**、**边界声明**、**五条硬规则**、**架构示意简图**、可交互的 HITL 审批卡、核心能力表、出厂两个 agent、教程入口 |
-| `/manual` `/zh/manual` | 用户手册索引：十章卡片，每张列出该章小节并可直达锚点 |
 | `/manual/<slug>` `/zh/manual/<slug>` | 章节正文：原文全文 + 侧边目录（章 + 本章小节，滚动跟随高亮）+ 上下章导航 |
+
+手册**没有独立的目录页**：页头「用户手册」直接落到入口章节 `first-run`，
+章节目录由章节页左侧的侧边栏承担（窄屏折成两列）。旧地址 `/manual`、`/zh/manual`
+由 `public/_redirects` 301 到入口章节。
 
 站点页面上不出现任何仓库路径 —— 读者看到的是内容本身，不是它从哪个文件来的。
 
@@ -207,10 +210,13 @@ node scripts/make-og.mjs en   # 生成 public/og.en.png
 
 - `src/styles/effects.css` —— 全部动效
   - 页面转场：原生 `@view-transition { navigation: auto }`，无客户端路由
-  - 入场关键帧：`flip`（卡片从平躺翻起）/ `rise`（向上抹出）/ `tilt` / `fade`
+  - 入场关键帧：`flip`（卡片从平躺翻起）/ `rise`（向上抹出）/ `tilt` / `fade`；
+    `rise` 是遮罩擦出，宽区块用它会像缺内容 —— 首页页尾的「完整使用手册」改用 `fade` + `data-enter-late`
   - 滚动联动：`animation-timeline: view(0px)` + `animation-range`，正文块随滚动遮罩揭示
 - `src/scripts/enter.ts` —— 入场触发器：元素露出 15% 时加 `.is-in`，动画播一次；
-  比视口还高的元素 `intersectionRatio` 永远到不了 0.15，这类只要开始相交就放行
+  比视口还高的元素 `intersectionRatio` 永远到不了 0.15，这类只要开始相交就放行；
+  带 `data-enter-late` 的元素改等露出 60% 再放行 —— 页尾「滚到底就是终点」的区块，
+  在视口下沿就擦出的话，用户滚到位时看到的还是半截
 - `src/layouts/Base.astro` 的 `<head>` 里有一段**同步内联脚本**，在首次绘制之前给 `<html>` 加 `.js-enter`。
   这一步不能挪进 body 末尾的 module 脚本：否则元素先以最终态出现、突然被隐藏、再播动画，肉眼就是闪一下。
   脚本带 3 秒兜底 —— 入场脚本没能接管（没打上 `js-enter-ready`）就移除 `.js-enter`，内容不会一直藏着

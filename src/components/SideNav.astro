@@ -67,6 +67,11 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
 <style>
   .sidebar {
     flex: 0 0 268px;
+    /* 撑满整行 —— sticky 的吸顶空间取决于包含块的高度。
+       .manual-shell 用了 align-items:flex-start，侧栏这一格就只长到自己的内容高，
+       .sidebar__inner 的包含块随之等高，一行都挪不动，滚动时侧栏直接滚出屏幕。
+       这一格拉满整行（行高 = 正文高），sticky 才真的能吸住。 */
+    align-self: stretch;
   }
 
   .sidebar__inner {
@@ -173,6 +178,9 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
   @media (max-width: 1000px) {
     .sidebar {
       flex: 1 1 auto;
+      /* 窄屏是 column 布局：交叉轴变成横向，stretch 只会把侧栏拉满整行，
+         跟原来的 fit-content 宽度不是一回事 —— 这里换回 flex-start 保持原样。 */
+      align-self: flex-start;
     }
 
     .sidebar__inner {
@@ -181,12 +189,23 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
       gap: 0;
     }
 
-    /* 窄屏不铺开完整目录 —— 正文优先，全目录在索引页里 */
-    .sidebar__label--toc,
+    /* 窄屏只收起本章小节（正文的二级目录）——
+       章节列表得留着：手册没有独立的目录页了，它是唯一的全局导航。 */
     .sidebar__label--sub,
-    .sidebar__list,
     .sidebar__sections {
       display: none;
+    }
+
+    /* 十章排成两列，别把正文顶到屏幕外 */
+    .sidebar__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px 12px;
+      margin: 10px 0 22px;
+    }
+
+    .sidebar__link {
+      padding: 6px 8px;
+      font-size: 13.5px;
     }
 
     .sidebar__back {

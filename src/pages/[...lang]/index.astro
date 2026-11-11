@@ -27,8 +27,8 @@ const chapters = (await getCollection('manual', (e) => e.data.lang === lang))
     note: lang === 'zh' ? `第 ${e.data.chapter} 章` : `Ch. ${e.data.chapter}`,
   }));
 
+// 精选章节（入口「第一次使用」由左侧的大卡片承担，这里不重复）
 const featured = [
-  { slug: 'first-run', label: lang === 'zh' ? '第一次使用' : 'First run' },
   { slug: 'interface', label: lang === 'zh' ? '界面怎么用' : 'Using the interface' },
   { slug: 'configuration', label: lang === 'zh' ? '配置怎么写' : 'Writing configuration' },
   { slug: 'multi-agent', label: lang === 'zh' ? '多 Agent 与委派' : 'Multiple agents' },
@@ -112,7 +112,7 @@ const terminalBody = lang === 'zh'
 
       <div class="hero__actions">
         <a class="btn btn--primary" href={manualUrl(lang, 'first-run')}>{copy.heroCta.primary[lang]}</a>
-        <a class="btn btn--ghost" href={manualUrl(lang)}>{copy.heroCta.secondary[lang]}</a>
+        <a class="btn btn--ghost" href="#capabilities">{copy.heroCta.secondary[lang]}</a>
       </div>
 
       <p class="hero__note">{copy.heroNote[lang]}</p>
@@ -269,7 +269,7 @@ const terminalBody = lang === 'zh'
   </section>
 
   <!-- ============ 核心能力 ============ -->
-  <section class="section">
+  <section class="section" id="capabilities">
     <div class="container">
       <div class="section-head section-head--center" data-enter="rise">
         <span class="eyebrow">{copy.capabilities.eyebrow[lang]}</span>
@@ -337,14 +337,17 @@ const terminalBody = lang === 'zh'
   <!-- ============ 教程入口 ============ -->
   <section class="section section--tight">
     <div class="container">
-      <div class="section-head section-head--center" data-enter="rise">
+      <!-- 页尾区块：整块淡入 + 延后触发（data-enter-late）。
+           不用 rise 的遮罩擦出 —— 宽区块被自下而上切开时，
+           会出现「标题出来了、卡片标题还没出来」的缺内容感。 -->
+      <div class="section-head section-head--center" data-enter="fade" data-enter-late>
         <span class="eyebrow">{copy.manual.eyebrow[lang]}</span>
         <h2>{copy.manual.title[lang]}</h2>
         <p>{copy.manual.lead[lang]}</p>
       </div>
 
-      <div class="tutorial" data-enter="rise">
-        <a class="tutorial__main" href={manualUrl(lang)}>
+      <div class="tutorial" data-enter="fade" data-enter-late>
+        <a class="tutorial__main" href={manualUrl(lang, 'first-run')}>
           <h3>{lang === 'zh' ? '用户手册' : 'User manual'}</h3>
           <p>{lang === 'zh' ? '十章，从安装到常见问题。' : 'Ten chapters, from installation to the FAQ.'}</p>
           <span class="tutorial__more">{copy.manual.more[lang]} →</span>
@@ -366,6 +369,11 @@ const terminalBody = lang === 'zh'
 </Base>
 
 <style>
+  /* 锚点跳转：页头是吸顶的，给目标段留出页头的高度 */
+  #capabilities {
+    scroll-margin-top: calc(var(--header-h) + 16px);
+  }
+
   /* ---- Hero ---- */
   .hero {
     position: relative;

@@ -1,3 +1,7 @@
 # 旧英文路径（/en 前缀）已并入根路径，避免已收录链接 404
 /en / 301
 /en/* /:splat 301
+
+# 手册不再有独立的目录页：旧的手册首页落到入口章节（第一次使用）
+/manual /manual/first-run 301
+/zh/manual /zh/manual/first-run 301

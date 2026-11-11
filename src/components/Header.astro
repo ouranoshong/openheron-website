@@ -1,7 +1,7 @@
 ---
 import BrandMark from './BrandMark.astro';
 import LangSwitch from './LangSwitch.astro';
-import { homeUrl, manualUrl, type Lang } from '../i18n';
+import { homeUrl, manualUrl, manualBaseUrl, MANUAL_ENTRY_SLUG, type Lang } from '../i18n';
 import { nav as copy } from '../content/site-copy';
 
 interface Props {
@@ -10,18 +10,26 @@ interface Props {
 
 const { lang } = Astro.props;
 
-const nav = [
-  { href: homeUrl(lang), label: copy.home[lang] },
-  { href: manualUrl(lang), label: copy.manual[lang] },
-  { href: manualUrl(lang, 'commands'), label: copy.commands[lang] },
-];
-
 /** 仓库地址：指向运行时本体，不是本站 */
 const REPO_URL = 'https://github.com/ouranoshong/openheron';
 
-const current = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isActive = (href: string) =>
-  href === '/' ? current === '/' : current === href || current.startsWith(`${href}/`);
+// build.format 为 file 时 pathname 是产物路径（/zh/manual/x.html），
+// 比对前先去掉 .html —— 否则永远匹配不上对外 URL。
+const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/+$/, '') || '/';
+const manualBase = manualBaseUrl(lang);
+const commandsHref = manualUrl(lang, 'commands');
+
+const onCommands = current === commandsHref || current.startsWith(`${commandsHref}/`);
+// 「用户手册」没有目录页，落在入口章节上；手册里的任何章节都算它的范围，
+// 但命令行速查更具体 —— 由它自己点亮，避免两个同时高亮。
+const onManual =
+  (current === manualBase || current.startsWith(`${manualBase}/`)) && !onCommands;
+
+const nav = [
+  { href: homeUrl(lang), label: copy.home[lang], active: current === homeUrl(lang) },
+  { href: manualUrl(lang, MANUAL_ENTRY_SLUG), label: copy.manual[lang], active: onManual },
+  { href: commandsHref, label: copy.commands[lang], active: onCommands },
+];
 ---
 
 <header class="header">
@@ -36,7 +44,7 @@ const isActive = (href: string) =>
     <nav class="nav" aria-label="Main navigation">
       {
         nav.map((item) => (
-          <a href={item.href} class:list={['nav__link', { 'is-active': isActive(item.href) }]}>
+          <a href={item.href} class:list={['nav__link', { 'is-active': item.active }]}>
             {item.label}
           </a>
         ))
@@ -65,7 +73,7 @@ const isActive = (href: string) =>
   <div class="mobile-nav" hidden>
     {
       nav.map((item) => (
-        <a href={item.href} class:list={['mobile-nav__link', { 'is-active': isActive(item.href) }]}>
+        <a href={item.href} class:list={['mobile-nav__link', { 'is-active': item.active }]}>
           {item.label}
         </a>
       ))

@@ -2,7 +2,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
 import SideNav from '../../../components/SideNav.astro';
-import { manualUrl, DEFAULT_LANG, type Lang } from '../../../i18n';
+import { manualUrl, homeUrl, MANUAL_ENTRY_SLUG, DEFAULT_LANG, type Lang } from '../../../i18n';
 import { manualPage as copy } from '../../../content/site-copy';
 
 export async function getStaticPaths() {
@@ -49,6 +49,13 @@ const chapters = all.map((e) => ({
   note: e.data.chapter,
 }));
 const sections = headings.filter((h) => h.depth === 2);
+
+// 手册没有目录页了，「上一层」只能是入口章节；
+// 而入口章节自己再往上一层就是站点首页。
+const isEntry = entry.data.chapterSlug === MANUAL_ENTRY_SLUG;
+const back = isEntry
+  ? { href: homeUrl(lang), label: copy.backHome[lang] }
+  : { href: manualUrl(lang, MANUAL_ENTRY_SLUG), label: copy.backToStart[lang] };
 ---
 
 <Base
@@ -62,7 +69,7 @@ const sections = headings.filter((h) => h.depth === 2);
       items={chapters}
       currentHref={manualUrl(lang, entry.data.chapterSlug)}
       sections={sections}
-      back={{ href: manualUrl(lang), label: copy.backToManual[lang] }}
+      back={back}
       listLabel={copy.toc[lang]}
       sectionsLabel={copy.sections[lang]}
     />

@@ -117,7 +117,8 @@ function rewriteLinks(body, docFile, lang) {
         const crossLang = target.match(/^user-manual(_zh)?\.md$/);
         if (crossLang) {
           const other = crossLang[1] ? 'zh' : 'en';
-          return `](/${other}/manual/)`;
+          // 英文是默认语言，不带前缀；手册没有目录页了，落到入口章节。
+          return `](${other === 'en' ? '/manual' : '/zh/manual'}/first-run)`;
         }
 
         // 其它分册 / 源码文件：降级为纯文本

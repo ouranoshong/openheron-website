@@ -63,7 +63,9 @@ for (const p of pages) {
     // 产物是 build.format: 'file' 的扁平结构（zh/manual/commands.html）。
     // 去掉尾部斜杠再拼候选，两种写法都能命中。
     const cleanPath = rawPath.replace(/\/+$/, '');
-    const target = cleanPath.startsWith('/')
+    // 用 rawPath 判绝对/相对：'/' 去掉斜杠后是空串，
+    // 若按相对路径处理就会拼到当前页目录里去，找不到站点根的 index.html。
+    const target = rawPath.startsWith('/')
       ? path.join(dist, cleanPath)
       : path.join(path.dirname(p), cleanPath);
     const candidates = [

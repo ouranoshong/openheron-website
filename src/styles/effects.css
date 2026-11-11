@@ -122,6 +122,12 @@
   animation-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
 }
 
+/* data-enter-late：页尾「滚到底就是终点」的区块。
+   等真正看全了再放行，时长也短一截 —— 用户滚到位时内容已经是完整的。 */
+.js-enter [data-enter][data-enter-late] {
+  animation-duration: 0.5s;
+}
+
 /* 首屏标题：单独走 LCP 友好的淡入 */
 @media (prefers-reduced-motion: no-preference) {
   .hero__title {

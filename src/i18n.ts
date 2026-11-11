@@ -4,6 +4,9 @@
  * 路由约定（默认语言英文不带前缀）：
  *   /           英文首页        /manual/...    英文手册
  *   /zh/        中文首页        /zh/manual/... 中文手册
+ *
+ * 手册没有独立的目录页 —— /manual 只是一条指向入口章节的地址，
+ * 章节目录由各章页面左侧的侧边栏承担。
  */
 
 export const LANGS = ['zh', 'en'] as const;
@@ -45,9 +48,27 @@ export function homeUrl(lang: Lang): string {
   return lang === DEFAULT_LANG ? '/' : `/${lang}`;
 }
 
+/**
+ * 手册入口章节。
+ *
+ * 站点没有单独的「手册目录页」：页头的「用户手册」直接落到这一章，
+ * 章节目录由章节页侧边栏列出。
+ */
+export const MANUAL_ENTRY_SLUG = 'first-run';
+
+/** 手册的路径前缀（不含章节 slug）。 */
+export function manualBaseUrl(lang: Lang): string {
+  return lang === DEFAULT_LANG ? '/manual' : `/${lang}/manual`;
+}
+
+/**
+ * 手册地址。
+ *
+ * 不传 slug 时给的是入口章节（第一次使用），不是目录页 —— 目录页已经没有了。
+ */
 export function manualUrl(lang: Lang, slug?: string): string {
-  const base = lang === DEFAULT_LANG ? '/manual' : `/${lang}/manual`;
-  return slug ? `${base}/${slug}` : base;
+  const base = manualBaseUrl(lang);
+  return slug ? `${base}/${slug}` : `${base}/${MANUAL_ENTRY_SLUG}`;
 }
 
 /**
@@ -57,6 +78,7 @@ export function manualUrl(lang: Lang, slug?: string): string {
  * 只处理已知的两种形态（前缀可有可无）：
  *   /[lang]            → 另一种语言的首页
  *   /[lang]/manual/... → 另一种语言的同名手册页
+ *   /[lang]/manual     → 另一种语言的入口章节（没有目录页了）
  * 认不出来的路径原样返回（切换器就会退化成跳首页）。
  */
 export function translatePath(pathname: string, target: Lang): string {
