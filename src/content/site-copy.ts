@@ -323,8 +323,11 @@ export const home = {
       },
       {
         title: { zh: '给密钥', en: 'Supply a key' } satisfies Dict,
-        desc: { zh: '密钥只从环境变量读', en: 'Secrets are read from the environment only' } satisfies Dict,
-        code: 'export DEEPSEEK_API_KEY=sk-...',
+        desc: {
+          zh: '环境变量，或者界面 Secrets 标签页里的钥匙串',
+          en: 'The environment, or the keyring behind the Secrets tab',
+        } satisfies Dict,
+        code: 'export LLM_DEEPSEEK_API_KEY=sk-...',
       },
       {
         title: { zh: '启动', en: 'Start' } satisfies Dict,
