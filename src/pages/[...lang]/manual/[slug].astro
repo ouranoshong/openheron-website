@@ -48,7 +48,26 @@ const chapters = all.map((e) => ({
   label: e.data.title,
   note: e.data.chapter,
 }));
-const sections = headings.filter((h) => h.depth === 2);
+// 本章小节：二级标题进目录，三级小节挂在它所属的二级标题下面。
+// 分两级是因为上游的 #### 小节（如「密钥从哪来」）是独立的小节，
+// 平铺进目录会看不出归属，缩进一级才说得清它属于哪一节。
+interface SectionNode {
+  slug: string;
+  text: string;
+  children: SectionNode[];
+}
+
+const sections: SectionNode[] = [];
+for (const h of headings) {
+  if (h.depth === 2) {
+    sections.push({ slug: h.slug, text: h.text, children: [] });
+  } else if (h.depth === 3) {
+    const parent = sections[sections.length - 1];
+    // 孤零零的三级标题（前面没有二级标题）单独占一行，不丢
+    if (parent) parent.children.push({ slug: h.slug, text: h.text, children: [] });
+    else sections.push({ slug: h.slug, text: h.text, children: [] });
+  }
+}
 
 // 手册没有目录页了，「上一层」只能是入口章节；
 // 而入口章节自己再往上一层就是站点首页。

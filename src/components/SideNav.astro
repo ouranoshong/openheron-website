@@ -8,6 +8,8 @@ interface Item {
 interface Section {
   slug: string;
   text: string;
+  /** 三级小节，挂在所属的二级标题下面 */
+  children?: Section[];
 }
 
 interface Props {
@@ -55,6 +57,17 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
                 <a href={`#${s.slug}`} data-toc={s.slug}>
                   {s.text}
                 </a>
+                {s.children && s.children.length > 0 && (
+                  <ul class="sidebar__subsections">
+                    {s.children.map((c) => (
+                      <li>
+                        <a href={`#${c.slug}`} data-toc={c.slug}>
+                          {c.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>
@@ -162,7 +175,9 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
     padding-left: 6px;
   }
 
-  .sidebar__sections a {
+  /* 只给二级标题的链接上样式：用子选择器而不是后代选择器，
+     不然嵌套在里面的三级小节也会吃到同样的字号和内边距。 */
+  .sidebar__sections > li > a {
     display: block;
     padding: 5px 10px;
     border-radius: 6px;
@@ -171,11 +186,42 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
     line-height: 1.5;
   }
 
-  .sidebar__sections a:hover {
+  .sidebar__sections > li > a:hover {
     color: var(--text-muted);
   }
 
-  .sidebar__sections a.is-active {
+  .sidebar__sections > li > a.is-active {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* 小节在高亮位置时，它所属的二级标题别跟着熄灭 */
+  .sidebar__sections > li.is-parent-active > a {
+    color: var(--text-muted);
+  }
+
+  /* 三级小节：缩进一级、字号小一档，只作定位用 */
+  .sidebar__subsections {
+    display: grid;
+    gap: 1px;
+    margin: 1px 0 4px;
+    padding-left: 8px;
+  }
+
+  .sidebar__subsections a {
+    display: block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+    line-height: 1.45;
+  }
+
+  .sidebar__subsections a:hover {
+    color: var(--text-muted);
+  }
+
+  .sidebar__subsections a.is-active {
     color: var(--accent);
     background: var(--accent-soft);
   }
@@ -245,6 +291,12 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
         current = targets[targets.length - 1];
       }
       links.forEach((l) => l.classList.toggle('is-active', l.dataset.toc === current.id));
+
+      // 小节亮着的时候，它所属的二级标题别跟着熄灭
+      const parents = document.querySelectorAll('.sidebar__sections > li');
+      parents.forEach((li) => li.classList.remove('is-parent-active'));
+      const active = links.find((l) => l.dataset.toc === current.id);
+      active?.closest('.sidebar__subsections')?.parentElement?.classList.add('is-parent-active');
     };
 
     const onScroll = () => {

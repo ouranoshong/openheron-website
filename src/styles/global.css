@@ -557,14 +557,17 @@ th code {
   color: var(--text);
   margin: 48px 0 16px;
   padding-top: 4px;
-  scroll-margin-top: calc(var(--header-h) + 20px);
+  /* 锚点落点由 html 的 scroll-padding-top 统一管（页头高度 + 24px），
+     这里再补 24px 的空隙：标题落在页头下方 20 多像素处，
+     不会贴着页头，也不会掉到侧边栏的判定线以下（点完目录要高亮的那条）。 */
+  scroll-margin-top: 24px;
 }
 
 .prose h3 {
   font-size: 19px;
   color: var(--text);
   margin: 32px 0 10px;
-  scroll-margin-top: calc(var(--header-h) + 20px);
+  scroll-margin-top: 24px;
 }
 
 .prose p {
