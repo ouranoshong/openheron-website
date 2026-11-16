@@ -143,6 +143,11 @@ const { items, currentHref, sections = [], back, listLabel = '目录', sectionsL
     font-size: 11px;
     color: var(--text-faint);
     white-space: nowrap;
+    /* 章号跟着标题走。链接是 baseline 对齐，标题一旦折成两行，
+       章号就只跟第一行齐平、第二行空着，像没对齐。
+       改成自身居中：单行时它的小字号视觉重心本来就跟行高中点重合，
+       看着不变；折行时则落在整块标题的中间。 */
+    align-self: center;
   }
 
   .sidebar__link.is-current .sidebar__note {
