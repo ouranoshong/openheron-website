@@ -22,7 +22,7 @@ are indexed (`kb/index.go:21`).
 # .openheron/tools/kb.yaml
 corpus_dir: docs      # a directory relative to the project root
 index: default
-model: openai/text-embedding-3-small
+model: <vendor>/<embedding-model>
 top_k: 8
 ```
 
@@ -32,6 +32,11 @@ top_k: 8
   living in a system directory would rob the index of meaning.
 - `model` is required and must point at a model declared with `kind: embedding`;
   otherwise startup errors out (`kb.model ... is not an embedding model`).
+- ★ **The factory tree ships no embedding model.** `llm/openai.yaml` carries the chat
+  model `gpt-4o` and nothing else, so the name you copy off the vendor's page —
+  `openai/text-embedding-3-small`, say — is **not declared**:
+  `kb.model openai/text-embedding-3-small is not declared under llm/`. Declare the
+  embedding model in `llm/<vendor>.yaml` first, with `kind: embedding` on it.
 
 The index lands in `<data_dir>/kb/<index>/`.
 
@@ -45,10 +50,15 @@ openheron kb status                # inspect the index
 openheron kb status --json         # machine-readable
 ```
 
-All three accept `--config-dir <path>` to point at a different config root.
+All three accept `--config-root <path>` to point at a different config root (`--config-dir`
+is the previous name and still works).
 
-★ `kb index` takes a **run lock**: only one run at a time, and a second call waits for
-the first to finish.
+★ `kb index` takes a **run lock**: only one run at a time, and a second call **fails
+right away** rather than queueing:
+
+```
+another index run is in progress (...); wait for it to finish, or check `openheron kb status`
+```
 
 ★ `kb status` reporting `lexical-only retrieval` means **there are no vectors** — the
 index is purely lexical. Search still works but is less accurate than the hybrid. It

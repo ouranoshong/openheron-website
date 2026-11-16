@@ -44,7 +44,10 @@ match the checksum is not installed.
 | `INSTALL_DIR` | Where to install (default `~/.local/bin`, or `%LOCALAPPDATA%\Programs\openheron` on Windows) |
 | `OPENHERON_REPO` | Install from another `owner/repo` |
 | `OPENHERON_TOKEN` | A token, for a private repository |
+| `OPENHERON_BASE_URL` | The GitHub base URL (default `https://github.com`) |
 | `OPENHERON_API_URL` | The API host (default `https://api.github.com`; a GitHub Enterprise one is `https://<host>/api/v3`) |
+| `OPENHERON_ASSET` | An archive already on disk: the download is skipped, the checksum is still verified |
+| `OPENHERON_CHECKSUMS` | The checksums file to verify against (default: next to the asset) |
 
 ★ Prefer to look before you run? Download `install.sh` from the
 [releases page](https://github.com/ouranoshong/openheron/releases/latest) and read it —
@@ -97,8 +100,9 @@ task build-go     # backend only (no UI) — faster while iterating on Go code
 
 ★ On Windows the product is `bin\openheron.exe` — the executable keeps the `.exe` suffix
 there. And `python3` on Windows is the Microsoft Store alias — it exists and runs
-nothing — so the repository's own scripts call `python` there. It only matters for the
-document checks (`task lint-docs`).
+nothing — so the repository's own scripts call `python` there. It matters for the
+document checks (`task lint-docs`) and for the zip fallback in `task release` on
+Windows.
 
 ## 1.3 On Windows
 
@@ -123,9 +127,9 @@ powershell -c "irm https://github.com/ouranoshong/openheron/releases/latest/down
 
 **Where the tools differ.** The file tools (`read_file`, `write_file`, `edit_file`,
 `ls` and `glob`) are the runtime's own code, and they work on Windows as they are;
-only `grep` needs [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) on top —
-Windows does not ship it, and without it you get
-`ripgrep (rg) is not installed or not in PATH` (§10).
+only `grep` prefers [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) on top —
+Windows does not ship it, and without it the search **falls back to the built-in
+engine** and says so in the result (§10).
 
 **The shell tool finds a shell by itself.** `execute` needs a program to run the
 command in, and openheron looks for one when the process starts, in this order: `sh`
@@ -160,8 +164,8 @@ name is the only thing that crosses the boundary.
 Linux), and the model key bound on the host the way openheron reads it:
 
 ```sh
-printf '%s' "$DEEPSEEK_API_KEY" | sbx secret set-custom \
-    --host api.deepseek.com --env DEEPSEEK_API_KEY \
+printf '%s' "$LLM_DEEPSEEK_API_KEY" | sbx secret set-custom \
+    --host api.deepseek.com --env LLM_DEEPSEEK_API_KEY \
     --placeholder proxy-managed --value-stdin
 ```
 
@@ -213,5 +217,5 @@ same agent.
 ★ The step-by-step guide is
 `sandbox-kit/TUTORIAL.md` (Chinese:
 `sandbox-kit/TUTORIAL_zh.md`), and the design
-behind it is in `docs/sandbox-kit-design.md` — that document is
+behind it is in `docs/tools-design.md` — that document is
 Chinese only, like every design document in this repository.

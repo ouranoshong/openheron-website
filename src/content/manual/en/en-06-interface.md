@@ -11,7 +11,7 @@ sourceFile: "user-manual.md"
 | Element | What it does |
 |---|---|
 | **Header** | The agent filter (each chip names an agent; hover it for its context occupancy and spend), the theme switch, and the status of the current turn |
-| **Sidebar** | The session list, the "New thread" button, the settings entry |
+| **Sidebar** | The session list — grouped by project — the "New thread" button and the settings entry |
 | **Composer** | Ask a question; `/` opens the slash commands; supports drag/paste attachments |
 | **Message list** | Assistant replies, reasoning, tool-call cards, sub-agent output (with attribution) |
 | **Approval card** | Appears when your nod is needed: approve / deny (with an optional reason) |
@@ -57,6 +57,34 @@ error — so it can adjust its approach instead of falling over.
 approval can no longer be resumed and asks you to send a new message, instead of
 silently starting a fresh turn.
 
+★ **The round comes back to the tree it started with.** A round that was interrupted for
+an approval records the tree it ran on, and the resume continues on that tree — so a
+configuration change made in the meantime does not change what that round concludes.
+The change takes effect on the **next** round (§4.9). ★ If openheron was restarted in
+the meantime, that tree is gone: the round continues on the current one, and the log
+says so.
+
+★ **A second window on the same session keeps up.** If the approval is answered in one
+window, the other window's card disappears on its own and it goes on to follow the round
+that continued — no reload, and no button left over that the server would refuse.
+
+★ **The card reaches the windows that are watching, not only the one that started the
+round.** The approval is announced on the session's own channel, so every window looking
+at that session gets the card — and what it is asking for — the moment it appears.
+★ A window that opens afterwards finds the same card by reading the session's history:
+the channel carries what happens next, not what already happened.
+
+★ **The card does not need a reload.** If the connection drops while a round is running,
+the client comes back to that round and reads the open approvals out of the transcript — so
+an approval raised in that round still arrives on its own. ★ And if the server refuses that
+return — the round is over, but its approval has not landed on disk yet — the client waits
+for the round's ledger row to close and reads the transcript then.
+
+★ **A message sent in that instant is refused, not swapped for the approval.** The session
+stays busy until the card is on disk, so the server answers `409 session_busy` and the
+message goes back to the input box — ★ the approval is never taken away by a message that
+happened to arrive at the same moment.
+
 ## 6.3 The config editor
 
 `/settings` opens it. It can edit `llm/`, `agents/`, `tools/` and `mcps/`.
@@ -86,8 +114,8 @@ The write path has several gates:
   and **what to remove** — remove that reference first, then delete the file. The same
   goes for a model profile an agent uses and for an agent another agent delegates to.
 - `server/` is **not editable** (not hot-reloaded, so a change needs a restart).
-- **Literal secrets are rejected** — `api_key must be a reference, not a literal`. Use
-  `${ENV_VAR}` or `@file:/path`.
+- **The `api_key` line is retired** — a profile that still carries it is refused, and
+  the message names the variable and the keyring entry that replace it (§4.2).
 - **A file with no YAML content is rejected** — a file that is empty, or holds nothing
   but comments, carries no configuration at all. The message names the fields the file
   needs; under `tools/` it says which tool is missing what.
@@ -100,6 +128,39 @@ The write path has several gates:
   server's (`server/` is read-only, `tools/` takes five names, `mcps/` takes
   `<server>.yaml`), so the refusal comes back from the server, not from a copy in the
   dialog.
+
+### The Secrets tab
+
+The same dialog has **two tabs**: **Files** (the config editor above) and **Secrets**.
+The Secrets tab lists the two namespaces the keys live in — **Providers** and **MCP
+servers** — and the entities the configuration declares in them.
+
+For the entity you pick, the panel shows three rows and no value:
+
+| Row | What it means |
+|---|---|
+| Stored in | where the key is kept — `keyring:llm:deepseek`, or `—` |
+| In effect | which key is actually used — the environment's, the keyring's, a file's, or `none` |
+| Environment | the derived variable, and whether it is set |
+
+★ **The value is write-only.** The panel never shows the key, not even its length: the
+input is a password field, it is emptied after every write, and the value goes to the
+keyring and nowhere else — not into the configuration tree, not into a log line, not
+back to the browser.
+
+★ **"Stored" and "in effect" disagree exactly when the environment overrides the
+keyring** — and that is the trap of the whole design: the key was written, the write
+said "stored", and the key that is used is a different one. The panel says so in a
+warning, and so does `openheron secret set`.
+
+★ **Removing a whole group asks first.** "Remove all providers" deletes the model keys
+of the entities the configuration declares — and only those; the MCP servers' tokens are
+in a different namespace and are not touched. The confirmation names the scope and the
+count.
+
+★ **The list is driven by the configuration.** An entry whose entity is gone — a provider
+file you deleted — is invisible and cannot be removed from here: the keyring cannot be
+enumerated, so there is no way to know it is there.
 
 ## 6.4 The context meter
 
@@ -180,7 +241,32 @@ The same thing is available over HTTP — `POST /v2/sessions/{id}/compact` — f
 A session runs **one turn at a time**. If the same session is open in two windows — two
 tabs, or a tab and another machine — only one of them can be running a turn.
 
-The other one says so:
+★ **The second window watches that turn.** It is not kept out of the conversation: it asks
+the server which run owns the session and attaches to it, and the rest of the turn arrives
+in that window too.
+
+★ **An approval that appears reaches the second window too.** The session's own channel
+carries the card — with the tool and its arguments — to every window watching that
+session, so the window that did not start the round still shows the card and can answer
+it.
+
+```
+POST /v2/run
+{"threadId": "...", "runId": "..."}
+```
+
+★ **The attach is a read.** It is `POST /v2/run` with the run's `runId` and **no
+question**: it starts no turn and claims no session, so the turn goes on whoever is
+watching, and the server refuses an attach to a run that is over.
+
+★ **The turn belongs to the server, not to the window that started it.** Close that window
+and the attached one keeps receiving: the server archives the turn either way.
+
+★ **The stop button is the way to take over.** It stops the session's turn — whoever owns
+it — and then you can send. Every window that is watching sees it stop.
+
+★ **A message that arrives while a turn is running is refused.** The window that sent it
+says so:
 
 ```
 This session is running in another window — stop it to take over
@@ -189,20 +275,11 @@ This session is running in another window — stop it to take over
 ★ **Nothing is lost.** The refused message is not sent, so it does not appear in the
 conversation. The turn that is running keeps going, untouched.
 
-★ **The stop button is the way to take over.** It stops the session's turn — whoever
-owns it — and then you can send. The window that owned the turn sees it stop.
-
-★ **This is a server-side rule, not a browser one.** Any client that talks to the API
-gets the same answer, and the session's `state` reports `"running"` to every client
-looking at it. A second window opened while a turn is running hydrates as busy, with the
-send button already disabled.
-
-★ **A broken connection does not lose the turn.** The turn belongs to the server, not
-to the connection that happened to be watching it: the server archives it either way.
-A client whose connection drops comes back with the run's id — `POST /v2/run` with
-`runId` and **no question** — and gets the rest of the turn. `GET
-/v2/sessions/{id}/runs` says whether the run is still going, and the run's own history
-is there for the times when it is not.
+★ **This is a server-side rule, not a browser one.** Any client that talks to the API gets
+the same answer, and the session's `state` reports `"running"` to every client looking at
+it. `GET /v2/sessions/{id}/runs` says which run owns the session — that is how a second
+window finds the turn to attach to — and the run's own history is there for the times when
+it is not.
 
 ## 6.8 `/mcps` — the MCP servers of this agent
 
@@ -295,3 +372,98 @@ other — and the interface still shows you the name you recognise.
 ★ **A reload does not lose anything.** The files you have not sent yet come
 back (the server keeps them), and the files you already sent stay on their
 messages.
+
+## 6.10 The sidebar is a file tree of projects
+
+★ **Every conversation belongs to a project** (§3.1), and the sidebar shows that: one
+folder per project, named after it, with the conversations in it. ★ The conversations that
+belong to no project sit in a "Default Project" folder — that is the default project root.
+★ **A project is a folder even when it
+holds no conversations** — that folder is where the project's own actions live (§6.11),
+so a project with nothing in it is still a folder you can rename, move or remove.
+
+```bash
+openheron              # every project: one folder per project
+openheron .            # one project: one folder, and the "no project" conversations join it
+```
+
+★ **The folders open and close.** The arrow in front of a project's name folds it away, and
+the number of conversations in it stays on the heading. ★ The folders you closed are
+remembered on this machine, so the sidebar looks the same the next time you open it.
+★ A project with no conversations has no arrow: there is nothing to open.
+
+★ **A conversation keeps its project for its whole life** — there is no "move it to another
+project"; a conversation that works in another directory is a new conversation.
+
+★ **The `@` picker follows the project too**: it lists the files of the project the
+conversation on screen belongs to.
+
+## 6.11 Choosing a project, and managing the ones you have
+
+★ **The entry is the button under the input box**, on the line that says which agent is
+answering. ★ It **names the project the composer works in** — the same project the `@`
+picker lists the files of — and clicking it opens the dialog of the table.
+
+★ **The button has two forms, and the difference is the point.** On the **empty page** —
+no conversation, or one that has not said anything yet — it is a button and it opens the
+dialog. On a **conversation page** it is a **label**: it says where the work happens and
+does nothing else. ★ A conversation's project is fixed, so the only thing a switch could do
+there would be to leave the conversation — and a button that says one thing and does
+another is worse than no button.
+
+★ **The button is only there when there is a choice.** In the single-project
+mode (`openheron .`) there is nothing to pick, so there is no button; and a
+server that does not know the project table answers `503`, so the button is not
+drawn there either.
+
+★ **The empty page starts on "Default Project" — and that is the default project root.** A
+conversation without a project works in `<openheron-root>/projects/default`, and that is the
+fallback: nothing is picked until you pick it. ★ **New thread lets go of the project too** —
+the project belonged to the conversation that was on screen, and a conversation's project is
+fixed, so the composer comes back with no project. ★ The single-project mode is the
+exception: the process serves one directory, so there is nothing to let go of.
+
+The dialog holds two things:
+
+- **Choose** — the first row is "Default Project": the conversations then work in the
+  default project root. Then one row per project. Clicking a row moves the composer into it:
+  the button under the input box and the `@` picker all name that project from then on, and
+  the row that is the current one says so. ★ A conversation keeps its project for its whole
+  life, so choosing another one **leaves** a conversation that belongs to a different
+  project — it stays in the sidebar with its history, and the composer comes back empty.
+  ★ The next question then opens a conversation in the project you picked.
+- **Create** — a name (optional; the directory's own name is used when you
+  leave it empty) and a root directory (required, and it must not be empty).
+  The server turns the root into an absolute path and takes it as it is.
+  ★ **Browse** — the button next to the root field opens **your system's own
+  folder chooser**, the window you would open by hand, and puts the directory
+  you pick into the field. ★ The window opens **on the machine the server
+  runs on**, so a browser on another machine cannot use it — and closing it
+  without choosing is not an error: what you typed stays where it is.
+
+★ **The projects that already exist are managed in the sidebar**, on the project's own
+row: the "⋯" next to the name opens its menu.
+
+- **New conversation** — a new conversation in that project. The composer comes back empty
+  and that project becomes the one it works in. ★ It never keeps the conversation that is
+  already open — not even when that conversation belongs to that very project: a new
+  conversation is a new one.
+- **Rename project** — the name changes where it stands; the directory stays where it is.
+  ★ The name is **required** here — the project already has one, and an empty name would
+  take it away; the editor says so and keeps what you typed.
+- **Change folder** — the directory the project points at. ★ That directory is where the
+  work happens: a project *is* a directory. The **Browse** button opens your system's own
+  folder chooser, the same one the create form uses.
+- **Remove project** — the project leaves the sidebar. ★ **The conversations are kept**:
+  they fall back to "no project" and keep their history. Removing a label must not remove
+  the work.
+
+★ **The project you just created is the one you work in right away** — the
+composer switches into it. ★ The dialog stays open, with the new project in
+the list and marked as the current one: it shows what the create did, and it
+is where the next project would be created from.
+
+★ **A refused create keeps the dialog open**, with what you typed still in it
+and the server's reason under the form. The reason is the server's own
+sentence: the server owns the rules, so the client keeps no second copy of
+them.

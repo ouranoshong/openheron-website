@@ -42,7 +42,10 @@ irm https://github.com/ouranoshong/openheron/releases/latest/download/install.ps
 | `INSTALL_DIR` | 装到哪（缺省 `~/.local/bin`，Windows 上是 `%LOCALAPPDATA%\Programs\openheron`） |
 | `OPENHERON_REPO` | 从别的 `owner/repo` 装 |
 | `OPENHERON_TOKEN` | 私有仓库用的 token |
+| `OPENHERON_BASE_URL` | GitHub 站点（默认 `https://github.com`） |
 | `OPENHERON_API_URL` | API 主机（默认 `https://api.github.com`；GitHub Enterprise 是 `https://<host>/api/v3`） |
+| `OPENHERON_ASSET` | 已经在磁盘上的安装包：跳过下载，但仍然验校验和 |
+| `OPENHERON_CHECKSUMS` | 拿哪个校验和文件对（缺省：安装包旁边那个） |
 
 ★ 想先看一眼再执行，就从[发布页](https://github.com/ouranoshong/openheron/releases/latest)
 把 `install.sh` 下载下来读一遍 —— 脚本本身就是这个 release 的一部分，就在它装的那些
@@ -144,8 +147,8 @@ shell 工具根本够不到你的机器，openheron 有 Docker Sandbox Kit 的�
 （Linux 上要 KVM），以及按 openheron 读密钥的方式绑在宿主上的模型密钥：
 
 ```sh
-printf '%s' "$DEEPSEEK_API_KEY" | sbx secret set-custom \
-    --host api.deepseek.com --env DEEPSEEK_API_KEY \
+printf '%s' "$LLM_DEEPSEEK_API_KEY" | sbx secret set-custom \
+    --host api.deepseek.com --env LLM_DEEPSEEK_API_KEY \
     --placeholder proxy-managed --value-stdin
 ```
 
@@ -192,5 +195,5 @@ HOST IP     HOST PORT   SANDBOX PORT   PROTOCOL
 ★ 分步教程见
 `sandbox-kit/TUTORIAL.md`（中文：
 `sandbox-kit/TUTORIAL_zh.md`），
-背后的设计见 `docs/sandbox-kit-design.md` —— 那篇文档只有中文，
+背后的设计见 `docs/tools-design.md` —— 那篇文档只有中文，
 本仓库的设计文档都是这样。

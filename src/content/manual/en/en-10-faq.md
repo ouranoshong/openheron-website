@@ -9,22 +9,32 @@ sourceFile: "user-manual.md"
 ---
 
 **Q: Startup says `no configuration at ...: run \`openheron init\` to create one`**
-The config root is empty. Run `openheron init` in the project root.
+The config root is empty and the server could not write one itself — it does
+that on the first start in a project that has none. The startup log says why
+the automatic initialization failed; `openheron init` does the same thing with a
+model and a provider of your choice.
 
 **Q: `config: load <path>: agents/main.md does not exist or could not be parsed`**
 One of two things: the config root points at the wrong place (fix it with
-`--config-dir` or `$OPENHERON_CONFIG_DIR`), or the frontmatter of `agents/main.md` has
+`--config-root` or `$OPENHERON_CONFIG_ROOT`), or the frontmatter of `agents/main.md` has
 a wrong key.
 
 **Q: I changed `agents/main.md` and nothing happened?**
 `agents/` is hot-reloaded, so it should have taken effect. If it did not, look for the
-reload error in the startup log. `server/` and `skills/` are **not** hot-reloaded and
-need a restart.
+reload error in the startup log. `server/` is **not** hot-reloaded and needs a restart.
+`skills/` is hot too — a `SKILL.md` under the config root takes effect on the next turn
+(§4.6) — but a skills directory that lives elsewhere is not watched.
+
+**Q: I changed one agent's file — do the other agents change too?**
+No, and that is the point. A change reaches only the agents that read the file: the next
+turn rebuilds the agent you edited and its parents, and the others keep what they had.
+`config_get` with `impact` tells you who is in that set before you change anything
+(§4.9).
 
 **Q: The model does not think — `reasoning: high` seems to do nothing?**
-Most likely the model profile **does not declare the `high` tier**. A tier missing from
-the table is silently ignored. Add it under `models[].reasoning` in
-`llm/<vendor>.yaml`.
+Most likely the model profile **does not declare the `high` tier**. That is not a silent
+no-op: the configuration does not load, and the message names the agent, the tier and the
+levels the model does declare. Add it under `models[].reasoning` in `llm/<vendor>.yaml`.
 
 **Q: `kb_search` finds nothing, or finds the wrong things?**
 Run `openheron kb status` first: `lexical-only retrieval` means there are no vectors
@@ -55,8 +65,9 @@ It is on its way: the servers are started in the background when the configurati
 known. The tools it brings join the **next** turn — press **Refresh** to see them.
 
 **Q: The port is taken / the interface will not open?**
-Change the port in `listen_addr`, or override it with the `LISTEN_ADDR` environment
-variable.
+Change the port in `listen_addr`, or override it with the `OPENHERON_LISTEN_ADDR`
+environment variable. ★ Keep the host in it: `127.0.0.1:9090` is the safe form, and a bare `:9090`
+binds every interface.
 
 **Q: How do I see what the server actually loaded?**
 `GET /v2/config` returns the effective configuration; `GET /v2/health` returns the
@@ -77,3 +88,16 @@ budget, and the same answer to "is this file there". What it does not do is read
 `.gitignore`, and it knows fewer file types — a type it does not know is refused
 rather than guessed at. ★ The startup log names the engine that was picked; install
 ripgrep to get the other one.
+
+**Q: Where does my API key go?**
+Nowhere in the configuration. The provider's **file name** says where the key comes
+from: `llm/deepseek.yaml` is the environment variable `LLM_DEEPSEEK_API_KEY` or the
+keyring entry `llm:deepseek` — and the environment wins. Store one with
+`openheron secret set llm deepseek` or in the Settings dialog's **Secrets** tab
+(§6.3); export the variable instead when a container or a CI runner has to see it
+(§4.2).
+
+**Q: The startup says the `api_key` line is no longer read?**
+The profile still carries the old line. ★ Delete it: the key is not in the configuration
+any more, and the message names the variable and the keyring entry that replace it
+(§4.2).

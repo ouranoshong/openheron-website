@@ -9,18 +9,27 @@ sourceFile: "user-manual_zh.md"
 ---
 
 **Q：启动报 `no configuration at ...: run \`openheron init\` to create one`**
-配置根是空的。在项目根跑 `openheron init`。
+配置根是空的，而服务端没能自己写出来 —— 它会在第一次启动时写。启动日志里说了自动
+初始化为什么失败；在项目根跑 `openheron init` 做的是同一件事，只是模型和 provider
+由你定。
 
 **Q：报 `config: load <path>: agents/main.md does not exist or could not be parsed`**
-两件事之一：配置根指错了（用 `--config-dir` 或 `$OPENHERON_CONFIG_DIR` 指对），
+两件事之一：配置根指错了（用 `--config-root` 或 `$OPENHERON_CONFIG_ROOT` 指对），
 或者 `agents/main.md` 的 frontmatter 写错了键。
 
 **Q：改了 `agents/main.md` 没生效？**
 `agents/` 是热重载的，应该自动生效。没生效看启动日志里的 reload 错误。
-`server/` 和 `skills/` **不热重载**，要重启。
+`server/` **不热重载**，要重启。`skills/` 也是热的 —— 配置根下的 `SKILL.md` 下一轮就生效
+（§4.6）—— 但技能目录在别处就不在监视范围内。
+
+**Q：改了某个 Agent 的文件，别的 Agent 也会跟着变吗？**
+不会，而这正是要点。一份改动只到达读了那个文件的 Agent：下一轮重建的是你改的那个
+Agent 和它的父 Agent，其余的照旧留着。改之前想知道这个集合里有哪些，带 `impact` 的
+`config_get` 会告诉你（§4.9）。
 
 **Q：模型不思考，`reasoning: high` 像是没用？**
-多半是模型档案里**没有声明 `high` 档**。档位表缺哪档，那档就被静默忽略。
+多半是模型档案里**没有声明 `high` 档**。这不是静默无效：配置**根本加载不起来**，
+报错会点名是哪个 Agent、哪一档、模型声明了哪几档。
 去 `llm/<vendor>.yaml` 的 `models[].reasoning` 补上。
 
 **Q：`kb_search` 找不到东西 / 搜得不准？**
@@ -49,7 +58,8 @@ sourceFile: "user-manual_zh.md"
 按 **Refresh** 就看得见。
 
 **Q：端口被占 / 界面打不开？**
-`listen_addr` 改端口，或用环境变量 `LISTEN_ADDR` 覆盖。
+`listen_addr` 改端口，或用环境变量 `OPENHERON_LISTEN_ADDR` 覆盖。★ 地址里要留着主机名：
+`127.0.0.1:9090` 是安全写法，光一个 `:9090` 绑的是所有网卡。
 
 **Q：想看服务到底加载了什么？**
 `GET /v2/config` 返回生效配置；`GET /v2/health` 返回健康状态和 `deferred` 告警；
@@ -65,3 +75,13 @@ POSIX shell，机器上一个都没有时退回 `cmd.exe`；两种情况工具�
 它用自己的引擎搜：同样的正则、同样的上限、同样的预算，对「这个文件在不在」给出的
 答案也一样。少的是：不读 `.gitignore`，认识的文件类型更少 —— 不认识的类型会被
 拒绝，而不是猜一个。★ 启动日志会打印挑中的是哪个引擎；想用另一个就装上 ripgrep。
+
+**Q：密钥该放哪？**
+不放配置里。**provider 的文件名**说了算：`llm/deepseek.yaml` 就是环境变量
+`LLM_DEEPSEEK_API_KEY`，或者钥匙串条目 `llm:deepseek` —— 环境变量优先。
+用 `openheron secret set llm deepseek` 存一把，或者在设置对话框的 **Secrets**
+标签页里存（§6.3）；要让容器或 CI runner 看见，就 export 那个变量（§4.2）。
+
+**Q：启动时说 `api_key` 这一行不再被读了？**
+那个档案里还留着旧的那一行。★ 把它删掉：密钥已经不在配置里了，而那句话会点名
+替代它的变量与钥匙串条目（§4.2）。
