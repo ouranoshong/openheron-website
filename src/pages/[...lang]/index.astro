@@ -242,12 +242,19 @@ const terminalBody = lang === 'zh'
             <li>
               {
                 lang === 'zh'
-                  ? '档位只有两档：allow 直接跑 / ask 等你点头'
-                  : 'Two tiers only: allow runs straight through / ask waits for your nod'
+                  ? '配置里的档位只有两个：allow 直接跑 / ask 等你点头'
+                  : 'Two tiers in the configuration: allow runs straight through / ask waits for your nod'
               }
             </li>
             <li>
               {lang === 'zh' ? '没人点名的工具一律先问 —— 默认就是安全的那一档' : 'Anything nobody named asks first — the default is the safe tier'}
+            </li>
+            <li>
+              {
+                lang === 'zh'
+                  ? '不想每次都点头，就调输入框旁那面盾牌：受信路径内的写不问，完全授权则什么都不问 —— 但档位再高也不会多给 Agent 一个工具'
+                  : 'Not in the mood to nod every time? The shield beside the composer relaxes it: writes inside the trusted paths run unasked, full authorization asks for nothing — and no level ever hands an agent a tool it was not given'
+              }
             </li>
             <li>
               {

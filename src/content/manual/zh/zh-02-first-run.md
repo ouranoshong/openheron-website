@@ -177,3 +177,13 @@ shell 命令（§9）。
 | `--force` | 覆盖已存在的文件 |
 | `--dry-run` | 只打印要写什么，不落盘 |
 | `--json` | 机器可读输出 |
+
+★ `init` 还会建出**默认项目根**（`<openheron-root>/projects/default`）——
+  没有归属项目的会话就在这个目录里干活。命令会把它建出来的目录打印出来：
+
+```
+created /home/you/.openheron/projects/default (the default project root)
+```
+
+★ **点名的项目根不替你建**：笔误不该长出一个空目录。★ `--dry-run` 什么都不写 ——
+  目录也不写。

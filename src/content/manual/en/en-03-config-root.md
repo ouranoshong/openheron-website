@@ -32,6 +32,10 @@ does not move when the configuration moves:
 
 - **The default level is created for you** when it does not exist — and the tree in it
   is written for you too, on the first start (§2.1).
+- ★ **The default project root is created for you too** — by the server when it starts,
+  and by `openheron init` when it lays the layout out. ★ A **named** project root
+  (`--default-project-root`, `$OPENHERON_DEFAULT_PROJECT_ROOT`) is never created for
+  you: a typo must not grow an empty directory.
 - The first two levels are **not** created when they point nowhere — a typo must not
   silently grow an empty configuration tree. Startup then reports
   `config: load <path>: ...`, which tells you where it went wrong.

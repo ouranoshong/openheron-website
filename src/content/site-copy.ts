@@ -163,8 +163,8 @@ export const home = {
       {
         name: { zh: '工具清单与审批档位，从不合并', en: 'Tool lists and approval levels are never merged' } satisfies Dict,
         desc: {
-          zh: 'Agent 的 tools: 行点名它看得见哪些工具（不写就一个都没有），工具自己文件里的 allows: 行点名哪些不用问，其余一律先问。没有全局权限清单，两处也从不合并。',
-          en: 'An agent’s tools: line names the tools it can see — omit it and it sees none. Each tool file’s allows: line names those that run without asking; everything else asks. There is no global permission list, and the two never merge.',
+          zh: 'Agent 的 tools: 行点名它看得见哪些工具（不写就一个都没有），工具自己文件里的 allows: 行点名哪些不用问，其余一律先问。没有全局权限清单，两处也从不合并 —— 会话里那面盾牌只调「要不要点头」，不参与这份合并。',
+          en: 'An agent’s tools: line names the tools it can see — omit it and it sees none. Each tool file’s allows: line names those that run without asking; everything else asks. There is no global permission list, and the two never merge — and the shield in a session only turns whether to ask; it plays no part in this merge.',
         } satisfies Dict,
       },
       {
@@ -237,6 +237,13 @@ export const home = {
         desc: {
           zh: '写文件、执行命令等动作在执行前挂起，你批准后从 checkpoint 恢复。',
           en: 'Actions like writing files or running commands suspend before executing; once approved, the run resumes from a checkpoint.',
+        } satisfies Dict,
+      },
+      {
+        name: { zh: '会话授权模式', en: 'Session authorization mode' } satisfies Dict,
+        desc: {
+          zh: '输入框旁一面盾牌，三档可选：默认全问 / 受信路径（项目目录、上传目录、配置目录）里的写不问 / 完全授权什么都不问。它只决定「这次要不要点头」，不会给 Agent 变出新的工具。',
+          en: 'A shield beside the composer, three levels: everything asks by default / writes inside the trusted paths (project, uploads, configuration) run unasked / full authorization asks for nothing. It only answers whether to ask — it never grants a new tool.',
         } satisfies Dict,
       },
       {

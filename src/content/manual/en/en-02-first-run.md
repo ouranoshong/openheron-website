@@ -195,3 +195,14 @@ Other `init` options:
 | `--force` | Overwrite existing files |
 | `--dry-run` | Print what would be written, write nothing |
 | `--json` | Machine-readable output |
+
+★ `init` also creates the **default project root** (`<openheron-root>/projects/default`)
+— the directory a conversation that belongs to no project works in. The command prints
+the directory it created:
+
+```
+created /home/you/.openheron/projects/default (the default project root)
+```
+
+★ A **named** project root is not created for you: a typo must not grow an empty
+directory. ★ A `--dry-run` writes nothing — a directory included.
