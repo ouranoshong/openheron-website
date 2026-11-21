@@ -8,7 +8,7 @@ kind: "manual-chapter"
 sourceFile: "user-manual.md"
 ---
 
-**Q: Startup says `no configuration at ...: run \`openheron init\` to create one`**
+**Q: Startup says ``no configuration at ...: run `openheron init` to create one``**
 The config root is empty and the server could not write one itself — it does
 that on the first start in a project that has none. The startup log says why
 the automatic initialization failed; `openheron init` does the same thing with a
@@ -101,3 +101,32 @@ keyring entry `llm:deepseek` — and the environment wins. Store one with
 The profile still carries the old line. ★ Delete it: the key is not in the configuration
 any more, and the message names the variable and the keyring entry that replace it
 (§4.2).
+
+**Q: With the desktop app, no interface appears but a browser opened?**
+The embedded window could not start (usually a missing WebView2 Runtime or
+`WebKitGTK`). This is the **fallback path, not a fault** — the browser does
+exactly the same; install that runtime if you want the embedded window.
+
+**Q: The desktop app's tray icon never appears (Linux)?**
+Your desktop environment **has no tray host**: the tray speaks the StatusNotifier
+protocol, so an SNI host has to display it. KDE Plasma has one built in; ★
+**GNOME does not by default** ⇒ install an AppIndicator extension
+(Debian/Ubuntu: `gnome-shell-extension-appindicator`) and enable it. Searching
+the log for `systray error` shows whether that is the problem.
+
+**Q: The desktop app does not start and says openheron is too old?**
+★ The desktop app **does not read version numbers, it reads capabilities** — it
+runs `openheron --help` before starting and looks for `--config-root` /
+`--openheron-root`. Without them it refuses to start: update openheron by hand
+(§1.1), then start the desktop app again.
+
+**Q: Where do I look when the desktop app misbehaves?**
+Its own log: `%LOCALAPPDATA%\openheron-desktop\logs\desktop.log` (on Linux,
+`~/.config/openheron-desktop/logs/desktop.log`). It holds the port, the
+arguments and the raw output of the child processes, and **no key values**.
+★ Almost every broken state is fixed by clicking **"restart the service"** once
+(§2.4).
+
+**Q: Can the desktop app hold a fixed port?**
+★ **No** — the forced loopback and the port picked on every start are hard
+constraints, and there is no switch for them (§2.4).

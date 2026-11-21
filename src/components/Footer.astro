@@ -1,6 +1,6 @@
 ---
 import BrandMark from './BrandMark.astro';
-import { manualUrl, desktopGuideUrl, type Lang } from '../i18n';
+import { manualUrl, desktopUrl, type Lang } from '../i18n';
 import { footer as copy, nav } from '../content/site-copy';
 import { readDesktopMeta } from '../lib/desktop';
 
@@ -35,7 +35,7 @@ const groups = [
   {
     title: nav.desktop[lang],
     links: [
-      { href: desktopGuideUrl(lang), label: lang === 'zh' ? '安装与使用' : 'Install and use' },
+      { href: desktopUrl(lang), label: lang === 'zh' ? '安装与使用说明' : 'Install and use' },
       ...(desktop
         ? desktop.packages.map((p) => ({
             href: p.url,

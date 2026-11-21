@@ -17,6 +17,7 @@ nothing has to be installed next to it. How you install it depends on where you 
 | You are going to change the code | §1.2 Build it from source |
 | You are on Windows | §1.3 On Windows |
 | You want the agent's tools to have no way to reach your machine | §1.4 Running it in a sandbox |
+| You want a tray icon instead of a terminal | §1.5 Install the desktop app |
 
 ## 1.1 Install a release
 
@@ -219,3 +220,44 @@ same agent.
 `sandbox-kit/TUTORIAL_zh.md`), and the design
 behind it is in `docs/tools-design.md` — that document is
 Chinese only, like every design document in this repository.
+
+## 1.5 Install the desktop app
+
+★ **If you would rather not type a command, there is a desktop app**:
+`openheron-desktop` is a **launcher that lives in the system tray** — it starts
+openheron on a loopback address and opens an embedded window for you, and it
+keeps the binary up to date. It **does exactly nine things** (the user-level
+directories, the single instance, the port allocation, the binary version, the
+health check, the forced loopback, the tray, the capability probe and the
+embedded window), ★ **and it does not touch a single byte of your keys,
+configuration or projects** (§4.2).
+
+**Windows.** Download `openheron-desktop-*-windows-amd64-setup.exe` from the
+[website](https://openheron.bytebits.top):
+
+- It installs into `%LOCALAPPDATA%\Programs\openheron-desktop` — a **per-user
+  install, so no administrator rights are needed**;
+- The installer **carries a verified openheron of its own**, placed at
+  `%LOCALAPPDATA%\openheron-desktop\bin\openheron.exe`;
+- When it finishes, a page offers three checkboxes: "launch now", "read the
+  first-run notes" and "open the user manual online".
+
+★ The installer is **unsigned** — SmartScreen may object once, so choose
+"More info → Run anyway"; if you want to be sure, check it against the sha256
+on the download page (the `SHA256SUMS.txt` next to it says the same).
+
+**Linux.** Download `openheron-desktop-*-linux-amd64.AppImage`:
+
+```sh
+chmod +x openheron-desktop-*-linux-amd64.AppImage
+./openheron-desktop-*-linux-amd64.AppImage
+```
+
+★ **There is no "installation" step on Linux** — an AppImage is a **self-contained
+archive**, so running it is all it takes; on the first run it puts its own
+openheron into `~/.config/openheron-desktop/bin/`.
+
+★ The desktop app is **not required**: the command line works just as well
+(§1.1), and **both use the same things** — the home base, the configuration
+tree, the project table and the history are the same ones (§3). How to use it
+is §2.4.

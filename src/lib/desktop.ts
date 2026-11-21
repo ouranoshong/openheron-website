@@ -31,7 +31,6 @@ export interface DesktopMeta {
   packages: DesktopPackage[];
   checksumsUrl: string | null;
 }
-
 /**
  * 读一份元数据；文件不在、JSON 坏了、或文件本身不在磁盘上，都返回 null。
  *

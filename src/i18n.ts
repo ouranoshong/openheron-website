@@ -72,16 +72,21 @@ export function manualUrl(lang: Lang, slug?: string): string {
 }
 
 /**
- * 桌面版说明页（站内精简版手册）的地址。
+ * 桌面版说明在手册里的位置。
  *
- * 单独一个顶级路径，不挂在 /manual 下面 —— 它讲的是**另一个软件**
- * （openheron-desktop 托盘启动器），不是 openheron 本体的手册。
- * 默认语言（英文）挂在根上，中文在 /zh 下，与站内其它地址一致。
+ * 桌面版的使用说明**并进了用户手册**：安装那节是第 1 章的 §1.5，
+ * 用起来那节是第 2 章的 §2.4，出问题在第 10 章。
+ * 两边的小节锚点不同（中文「装桌面版」/ 英文 "install the desktop app"），
+ * 所以按语言各给一个。
  */
-export const DESKTOP_GUIDE_SLUG = 'openheron-desktop';
+export const DESKTOP_ANCHOR: Record<Lang, string> = {
+  zh: '#15-装桌面版',
+  en: '#15-install-the-desktop-app',
+};
 
-export function desktopGuideUrl(lang: Lang): string {
-  return lang === DEFAULT_LANG ? `/${DESKTOP_GUIDE_SLUG}` : `/${lang}/${DESKTOP_GUIDE_SLUG}`;
+/** 桌面版说明的地址：手册的安装章 + 桌面版那一节。 */
+export function desktopUrl(lang: Lang): string {
+  return `${manualUrl(lang, 'installation')}${DESKTOP_ANCHOR[lang]}`;
 }
 
 /**
@@ -92,7 +97,6 @@ export function desktopGuideUrl(lang: Lang): string {
  *   /[lang]            → 另一种语言的首页
  *   /[lang]/manual/... → 另一种语言的同名手册页
  *   /[lang]/manual     → 另一种语言的入口章节（没有目录页了）
- *   /[lang]/openheron-desktop → 另一种语言的桌面版说明页
  * 认不出来的路径原样返回（切换器就会退化成跳首页）。
  */
 export function translatePath(pathname: string, target: Lang): string {
@@ -103,9 +107,8 @@ export function translatePath(pathname: string, target: Lang): string {
   // 默认语言没有前缀：有前缀就剥掉，剩下的部分两种语言一致
   const rest = isLang(segs[0]) ? segs.slice(1) : segs;
 
-  if (rest[0] === 'manual') return manualUrl(target, rest[1]);
-  if (rest[0] === DESKTOP_GUIDE_SLUG) return desktopGuideUrl(target);
-  return homeUrl(target);
+  if (rest[0] !== 'manual') return homeUrl(target);
+  return manualUrl(target, rest[1]);
 }
 
 /**

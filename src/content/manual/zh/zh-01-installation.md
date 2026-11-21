@@ -17,6 +17,7 @@ openheron 是一个自包含的可执行程序 —— 界面已经嵌在二进�
 | 要改代码 | §1.2 从源码构建 |
 | 在 Windows 上 | §1.3 在 Windows 上 |
 | 想让 agent 的工具够不到你的机器 | §1.4 在沙箱里跑 |
+| 想用托盘里的图形界面 | §1.5 装桌面版 |
 
 ## 1.1 装发布版
 
@@ -197,3 +198,33 @@ HOST IP     HOST PORT   SANDBOX PORT   PROTOCOL
 `sandbox-kit/TUTORIAL_zh.md`），
 背后的设计见 `docs/tools-design.md` —— 那篇文档只有中文，
 本仓库的设计文档都是这样。
+
+## 1.5 装桌面版
+
+★ **不想敲命令的话，还有一个桌面版**：`openheron-desktop` 是个**常驻系统托盘的启动器** ——
+它在回环地址上把 openheron 拉起来，再开一个内嵌窗口给你看，顺手管更新。
+它**只做九件事**（用户级目录、单实例、端口分配、二进制版本、健康检查、
+强制回环、托盘、能力探测、内嵌窗口），★ **密钥、配置、项目它一个字都不碰**（§4.2）。
+
+**Windows。** 从[官网](https://openheron.bytebits.top)下载
+`openheron-desktop-*-windows-amd64-setup.exe`：
+
+- 装到 `%LOCALAPPDATA%\Programs\openheron-desktop` —— **per-user 安装，不需要管理员权限**；
+- 安装包**自带一份校验过的 openheron**，放在 `%LOCALAPPDATA%\openheron-desktop\bin\openheron.exe`；
+- 装完有一页可以勾三件事：「立刻启动」「读首次运行说明」「打开官网上的手册」。
+
+★ 安装包**未签名** —— SmartScreen 可能拦一下，选「更多信息 → 仍要运行」；
+想稳一点就用下载页上那串 sha256 核对（同目录的 `SHA256SUMS.txt` 里就是）。
+
+**Linux。** 下载 `openheron-desktop-*-linux-amd64.AppImage`：
+
+```sh
+chmod +x openheron-desktop-*-linux-amd64.AppImage
+./openheron-desktop-*-linux-amd64.AppImage
+```
+
+★ **Linux 上没有「安装」这一步** —— AppImage 是**自包含归档**，跑起来就在了；
+第一次运行时它把自带的 openheron 放进 `~/.config/openheron-desktop/bin/`。
+
+★ 桌面版**不是必须的**：命令行装法（§1.1）一样能用，而且**两边用的是同一份东西** ——
+大本营、配置树、项目表、历史都是同一份（§3）。怎么用见 §2.4。

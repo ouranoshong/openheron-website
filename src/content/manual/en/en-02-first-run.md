@@ -206,3 +206,75 @@ created /home/you/.openheron/projects/default (the default project root)
 
 ★ A **named** project root is not created for you: a typo must not grow an empty
 directory. ★ A `--dry-run` writes nothing — a directory included.
+
+## 2.4 Running it with the desktop app
+
+★ The desktop app **changes none of openheron's rules** — it only starts the
+service and opens the interface for you. All of this assumes you installed it
+as described in §1.5.
+
+**The first launch.** Start menu → **openheron desktop** (on Linux, run the
+AppImage again). The openheron mark appears in the tray, and ★ **hovering over
+the icon** shows one line:
+
+`openheron-desktop · 127.0.0.1:53214 · running`
+
+★ **The address appears here and nowhere else** — there is no address bar in the
+window title and none in the interface. A free port is **re-picked on every
+start**, so the number changes.
+
+★ On the first run, when there is no configuration tree yet, the desktop app
+**runs `openheron init` for you** — the same tree the server writes itself
+(§2.3).
+
+★ **Starting it again does not open a second service**: the second instance
+**brings the first instance's window to the front** and quits itself.
+
+**The tray menu.** Right-click the tray icon: **9 rows** in all (eight actions
+plus one read-only block):
+
+| Row | What it does | Note |
+|---|---|---|
+| **打开界面** | Opens the embedded window | If the window is already open it **brings it to the front**, and **never** opens a second one; while the service is still starting this row is **greyed out** |
+| **打开 openheron 大本营** | Opens the home-base directory | The configuration, sessions, project table and logs **all live under it** (§3) |
+| **打开配置目录** | Opens the config root | |
+| **打开默认项目目录** | Opens the working directory of "sessions that belong to no project" | |
+| **打开日志** | Opens the desktop app's own log directory | That is where to look first when something breaks (§10) |
+| **重启服务** | Stops the service and starts it again | ★ **It picks a different port**, and the window reopens with it — the window was still showing the old address |
+| **检查更新** | Really asks GitHub whether a newer openheron exists | ★ It is the **only** update entry point — it **never polls** and **never swaps versions behind your back** |
+| **版本信息 ▸** | A **read-only block**, three grey lines | desktop version / openheron version / the result of the last check. ★ Grey means **not clickable**, not broken |
+| **退出** | Stops the service and quits | The service process goes with it |
+
+★ The **row names are Chinese** — the desktop app's interface is Chinese.
+
+**Updating openheron.** Click "check for updates": it asks GitHub for the
+latest release → compares it with **the version that is running** → ★ **asks
+you** whether to update → downloads → verifies the sha256 against upstream's
+`checksums.txt` → unpacks → ★ **asks the new binary what it can do** (whether
+it supports the new root model) → **if it does not qualify, nothing is
+replaced** → stops the service → swaps the files → starts it again.
+
+★ Every click answers back: a message box when you are already up to date; ★
+**a local copy that is newer than the release is never downgraded**; a
+confirmation box when there is a new version; an error box when it fails — and
+★ **not one byte of the running binary was touched**.
+
+★ **It never phones home on its own**: apart from you clicking "check for
+updates", it **does not contact any external address**; everything between it
+and openheron happens on `127.0.0.1`.
+
+**Where your things live.**
+
+| Whose | Windows | Linux |
+|---|---|---|
+| **The desktop app's data** | `%LOCALAPPDATA%\openheron-desktop\` | `~/.config/openheron-desktop/` |
+| **openheron's home base** | `%USERPROFILE%\.openheron\` | `~/.openheron/` |
+
+★ **The home base belongs to openheron, not to the desktop app** — so the
+openheron you run from the command line and the one the tray runs **use the
+same** configuration, the same project table and the same history: **they never
+disagree**.
+
+★ **The keys do not belong to the desktop app either**: it does not read, write,
+detect or remind. The key still has its two places — the environment variable
+`LLM_DEEPSEEK_API_KEY`, or the keyring entry `llm:deepseek` (§4.2).

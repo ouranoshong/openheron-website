@@ -6,9 +6,8 @@
  * 取不到产物时整块不显示（只留一句说明）：
  * 宁可没有入口，也不要一个点不动的下载链接。
  */
-import { home as copy, desktopGuide } from '../content/site-copy';
+import { home as copy } from '../content/site-copy';
 import { readDesktopMeta } from '../lib/desktop';
-import Inline from './Inline.astro';
 import type { Lang } from '../i18n';
 
 interface Props {
@@ -44,9 +43,7 @@ const meta = readDesktopMeta();
         </div>
       ))}
 
-      <p class="dl__note">
-        <Inline text={desktopGuide.download.unsigned[lang]} />
-      </p>
+      <p class="dl__note">{copy.desktop.unsigned[lang]}</p>
 
       <p class="dl__note">
         {meta.checksumsUrl && <a href={meta.checksumsUrl}>{copy.desktop.checksums[lang]}</a>}
@@ -149,5 +146,4 @@ const meta = readDesktopMeta();
     color: var(--accent);
     text-decoration: underline;
     text-underline-offset: 3px;
-  }
-</style>
+  }</style>

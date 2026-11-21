@@ -5,7 +5,7 @@ import Snippet from '../../components/Snippet.astro';
 import ApprovalDemo from '../../components/ApprovalDemo.astro';
 import ArchDiagram from '../../components/ArchDiagram.astro';
 import DesktopDownload from '../../components/DesktopDownload.astro';
-import { homeUrl, manualUrl, desktopGuideUrl, DEFAULT_LANG, type Lang } from '../../i18n';
+import { homeUrl, manualUrl, desktopUrl, DEFAULT_LANG, type Lang } from '../../i18n';
 import { home as copy, ui, site } from '../../content/site-copy';
 import { readDesktopMeta } from '../../lib/desktop';
 
@@ -150,7 +150,7 @@ const terminalBody = lang === 'zh'
               <p class="dl__aside">{copy.desktop.other[lang]}</p>
             </div>
 
-            <DesktopDownload lang={lang} guideHref={desktopGuideUrl(lang)} />
+            <DesktopDownload lang={lang} guideHref={desktopUrl(lang)} />
           </div>
         </div>
       </section>

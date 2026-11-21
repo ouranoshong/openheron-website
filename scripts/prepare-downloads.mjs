@@ -68,7 +68,8 @@ function sha256Of(file) {
 }
 
 function humanSize(bytes) {
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  // ★ 空格用不换行空格：页脚那一列窄，「18.0 MB」断成两行很难看。
+  return `${(bytes / 1024 / 1024).toFixed(1)}\u00a0MB`;
 }
 
 /**

@@ -8,7 +8,7 @@ kind: "manual-chapter"
 sourceFile: "user-manual_zh.md"
 ---
 
-**Q：启动报 `no configuration at ...: run \`openheron init\` to create one`**
+**Q：启动报 ``no configuration at ...: run `openheron init` to create one``**
 配置根是空的，而服务端没能自己写出来 —— 它会在第一次启动时写。启动日志里说了自动
 初始化为什么失败；在项目根跑 `openheron init` 做的是同一件事，只是模型和 provider
 由你定。
@@ -85,3 +85,27 @@ POSIX shell，机器上一个都没有时退回 `cmd.exe`；两种情况工具�
 **Q：启动时说 `api_key` 这一行不再被读了？**
 那个档案里还留着旧的那一行。★ 把它删掉：密钥已经不在配置里了，而那句话会点名
 替代它的变量与钥匙串条目（§4.2）。
+
+**Q：用桌面版时界面没出来，但浏览器弹了？**
+内嵌窗口起不来（多半是缺 WebView2 Runtime 或 `WebKitGTK`）。这是**降级路径，不是故障** ——
+用浏览器完全一样；想用内嵌窗口就把那个运行时装上。
+
+**Q：桌面版的托盘图标不出现（Linux）？**
+你的桌面环境**没有托盘宿主**：托盘走的是 StatusNotifier 协议，得有一个 SNI 宿主来显示它。
+KDE Plasma 自带；★ **GNOME 默认不带** ⇒ 装个 AppIndicator 扩展
+（Debian/Ubuntu：`gnome-shell-extension-appindicator`）并启用。
+日志里搜 `systray error` 能看出是不是它。
+
+**Q：桌面版起不来，提示 openheron 太旧？**
+★ 桌面版**不认版本号、只认能力** —— 启动前跑一次 `openheron --help`，看有没有
+`--config-root` / `--openheron-root`。没有就拒绝启动：手动更新 openheron（§1.1），
+再回来启动它。
+
+**Q：桌面版出问题了看哪儿？**
+看它自己的日志：`%LOCALAPPDATA%\openheron-desktop\logs\desktop.log`
+（Linux 上是 `~/.config/openheron-desktop/logs/desktop.log`）。
+里面只有端口、参数和子进程的原始输出，**不会有密钥值**。
+★ 绝大多数状态，点一次托盘的「**重启服务**」就能恢复（§2.4）。
+
+**Q：桌面版能固定端口吗？**
+★ **不能** —— 强制回环 + 每次重选端口是硬约束，不给开关（§2.4）。

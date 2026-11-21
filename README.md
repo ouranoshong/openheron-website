@@ -7,13 +7,16 @@ openheron 是一个**跑在本地、配置是文件的多 Agent 运行时** —�
 
 站点支持**中文与英文**两种语言（英文在根路径，中文在 `/zh`）。
 
-站点只做三件事：
+站点只做两件事：
 
 | 区块 | 路径 | 内容 |
 |---|---|---|
 | **介绍** | `/` `/zh` | openheron 是什么、能做什么、一轮对话怎么走、怎么跑起来 |
 | **使用说明** | `/manual/*` `/zh/manual/*` | 用户手册全文，按 10 章拆页，配侧边目录 |
-| **桌面版说明** | `/openheron-desktop` `/zh/openheron-desktop` | openheron-desktop 托盘启动器的安装、第一次启动、托盘菜单、排障（**站内精简版**，四段） |
+
+★ **桌面版（openheron-desktop）的使用说明并进手册**：安装那节是第 1 章的 §1.5，
+用起来那节是第 2 章的 §2.4，出问题在第 10 章 —— 所以它**不在本站另开一页**，
+正文跟手册一样来自 openheron 仓库的 `docs/user-manual_zh.md` 与 `docs/user-manual.md`。
 
 站内**不展示设计细节**（内部架构、依赖约束、设计分册）。内容全部来自 openheron 仓库的
 `docs/user-manual_zh.md` 与 `docs/user-manual.md`，不在本站手工维护：构建时由
@@ -134,18 +137,24 @@ SITE_URL=https://openheron.bytebits.top npm run deploy
 - `public/_headers` 给 `/downloads/*` 加了 `Content-Disposition: attachment` 与一年 immutable 缓存
   （文件名带版本号，可以 immutable）
 
-### 桌面版说明页
+### 桌面版说明在手册里
 
-`/openheron-desktop`（英文）与 `/zh/openheron-desktop`（中文）是**桌面版手册的站内精简版**，
-只四段：安装、第一次启动、托盘菜单、出问题了。
+桌面版的说明**不单独成页**，而是并进了手册：
 
-- 文案是**手写的**，放在 `src/content/site-copy.ts` 的 `desktopGuide` 里（双语一一对应），
-  **不搬**桌面版项目的 USER-GUIDE.md 全文
-- 托盘菜单的行名**保留中文原样** —— 桌面版的界面本身就是中文的，英文页照实写，不翻成英文
-- 版本号 / 大小 / sha256 仍然取自 `desktop.json`，不写死在文案里
-- 完整手册在桌面版项目源码里（`openheron-desktop/docs/USER-GUIDE.md` 与英文版 `USER-GUIDE.en.md`）；
-  桌面版的安装器与 Linux 菜单项都指向本站这一页（地址写在桌面版仓库的 `scripts/manual-url.txt`，
-  全仓库唯一一处）
+| 手册小节 | 内容 |
+|---|---|
+| §1.5 装桌面版 | Windows 安装包 / Linux AppImage：下载、校验、装哪、per-user 免管理员 |
+| §2.4 用桌面版跑起来 | 第一次启动、托盘菜单逐行、更新怎么走、东西放在哪、密钥归谁 |
+| §10 常见问题 | 桌面版的排障条目（浏览器退回复、托盘不出现、openheron 太旧、日志在哪） |
+
+- 正文写在 **openheron 仓库的手册里**（`docs/user-manual_zh.md` / `docs/user-manual.md`），
+  中英一一对应 —— 上游的 `task lint-docs` 会校验两版的标识符、代码块与 § 引用配平
+- 站内小节锚点两种语言不同（`#15-装桌面版` / `#15-install-the-desktop-app`），
+  `src/i18n.ts` 的 `desktopUrl()` 按语言给出
+- 入口：首页的下载区、页脚的「桌面版」一栏、手册 §1 的索引表
+- 完整手册留在桌面版项目源码里（`openheron-desktop/docs/USER-GUIDE.md` 与英文版
+  `USER-GUIDE.en.md`）；桌面版的安装器与 Linux 菜单项都指向站内这一节
+  （地址写在桌面版仓库的 `scripts/manual-url.txt`，全仓库唯一一处）
 
 ## 内容管线
 
@@ -189,7 +198,6 @@ OPENHERON_REPO=/path/to/openheron npm run build
 | `/zh` | 中文首页 |
 | `/manual` `/zh/manual` | 手册入口的旧目录地址 —— 301 跳到 `first-run` |
 | `/manual/<slug>` `/zh/manual/<slug>` | 章节正文（`first-run` 是入口章节） |
-| `/openheron-desktop` `/zh/openheron-desktop` | 桌面版说明页（安装 / 首启 / 托盘 / 排障） |
 
 - 语言定义与 URL 规则在 `src/i18n.ts`（单一事实源）
   —— 改默认语言就改这里的 `DEFAULT_LANG`：默认语言不带前缀，另一种语言挂在 `/<lang>` 下
@@ -206,7 +214,6 @@ OPENHERON_REPO=/path/to/openheron npm run build
 |---|---|
 | `/` `/zh` | 首页：定位、终端演示、**三条省 token 机制**、**边界声明**、**五条硬规则**、**架构示意简图**、可交互的 HITL 审批卡、核心能力表、出厂两个 agent、教程入口 |
 | `/manual/<slug>` `/zh/manual/<slug>` | 章节正文：原文全文 + 侧边目录（章 + 本章小节，滚动跟随高亮）+ 上下章导航 |
-| `/openheron-desktop` `/zh/openheron-desktop` | 桌面版说明页：双平台下载 + 安装 / 第一次启动 / 托盘菜单逐行 / 出问题了 |
 
 手册**没有独立的目录页**：页头「用户手册」直接落到入口章节 `first-run`，
 章节目录由章节页左侧的侧边栏承担（窄屏折成两列）。旧地址 `/manual`、`/zh/manual`
