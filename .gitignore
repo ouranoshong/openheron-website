@@ -2,6 +2,9 @@
 dist/
 .astro/
 
+# 桌面版安装包：构建时从 openheron-desktop 取（Windows 15 MB + Linux 18 MB × 每个版本，不入库）
+public/downloads/
+
 # 本地知识图谱（graphify 生成，可再生）
 graphify-out/
 

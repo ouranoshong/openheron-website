@@ -1,0 +1,26 @@
+---
+/**
+ * 行内的 **粗体** 与 `代码`。
+ *
+ * 正文写在 site-copy.ts 里，标记就写在那里 ——
+ * 不引 markdown 解析器，也不拼 HTML 字符串（拼字符串就等于把文案变成代码）。
+ */
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+
+type Part = { text: string; bold?: boolean; code?: boolean };
+
+const parts: Part[] = text
+  .split(/(\*\*[^*]+\*\*|`[^`]+`)/g)
+  .filter(Boolean)
+  .map((p) => {
+    if (p.startsWith('**') && p.endsWith('**')) return { text: p.slice(2, -2), bold: true };
+    if (p.startsWith('`') && p.endsWith('`')) return { text: p.slice(1, -1), code: true };
+    return { text: p };
+  });
+---
+
+{parts.map((p) => (p.bold ? <strong>{p.text}</strong> : p.code ? <code>{p.text}</code> : p.text))}

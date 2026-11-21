@@ -1,0 +1,153 @@
+---
+/**
+ * 桌面版下载区：每个平台一张卡，按钮上的版本号 / 大小 / sha256
+ * 全部来自构建时实测的 public/downloads/desktop.json —— 一个字都不是写死的。
+ *
+ * 取不到产物时整块不显示（只留一句说明）：
+ * 宁可没有入口，也不要一个点不动的下载链接。
+ */
+import { home as copy, desktopGuide } from '../content/site-copy';
+import { readDesktopMeta } from '../lib/desktop';
+import Inline from './Inline.astro';
+import type { Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+  /** 指向说明页的地址；在说明页上自己时可以不传（那一行就不出现） */
+  guideHref?: string;
+}
+
+const { lang, guideHref } = Astro.props;
+const meta = readDesktopMeta();
+---
+
+{
+  meta ? (
+    <div class="dl__box">
+      {meta.packages.map((p) => (
+        <div class="pkg">
+          <div class="pkg__head">
+            <span class="pkg__name">{p.platformLabel}</span>
+            <span class="pkg__built">
+              {copy.desktop.meta.built[lang]} {p.builtAt}
+            </span>
+          </div>
+
+          <a class="btn btn--primary pkg__btn" href={p.url} download>
+            {copy.desktop.button[lang]} · {p.version} · {p.sizeText}
+          </a>
+
+          <div class="pkg__sha">
+            <span class="pkg__label">{copy.desktop.meta.sha256[lang]}</span>
+            <code>{p.sha256}</code>
+          </div>
+        </div>
+      ))}
+
+      <p class="dl__note">
+        <Inline text={desktopGuide.download.unsigned[lang]} />
+      </p>
+
+      <p class="dl__note">
+        {meta.checksumsUrl && <a href={meta.checksumsUrl}>{copy.desktop.checksums[lang]}</a>}
+        {meta.checksumsUrl && guideHref && ' · '}
+        {guideHref && <a href={guideHref}>{copy.desktop.guide[lang]}</a>}
+      </p>
+    </div>
+  ) : (
+    <div class="dl__box dl__box--empty">
+      <p class="dl__note">{desktopGuide.download.absent[lang]}</p>
+    </div>
+  )
+}
+
+<style>
+  .dl__box {
+    display: grid;
+    gap: 18px;
+    padding: 22px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .dl__box--empty {
+    padding: 18px 20px;
+  }
+
+  .pkg {
+    display: grid;
+    gap: 10px;
+  }
+
+  /* 两个包之间用一条细线分开，而不是加更多框 —— 框太多就成了表格 */
+  .pkg + .pkg {
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .pkg__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .pkg__name {
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .pkg__built {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .pkg__btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pkg__sha {
+    display: grid;
+    gap: 4px;
+  }
+
+  .pkg__label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .pkg__sha code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    /* 64 个字符的哈希不需要高亮底 —— 一整条亮色底反而像一条横杠 */
+    background: none;
+    padding: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dl__note {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-faint);
+  }
+
+  .dl__note strong {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .dl__note a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

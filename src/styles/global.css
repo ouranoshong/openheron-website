@@ -265,6 +265,19 @@ svg {
   border-radius: 10px;
 }
 
+/* 正文里的按钮：`.prose a`（0,1,1）比 `.btn--primary`（0,1,0）更具体，
+   会把按钮里的字染成强调色还加上下划线 —— 强调色底 + 强调色字 = 看不见。
+   所以按钮从正文链接的规则里摘出来，颜色按各自的类重新写一遍。 */
+.prose a.btn--primary {
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+
+.prose a.btn--ghost {
+  color: var(--text);
+  text-decoration: none;
+}
+
 /* ---------- 卡片 ---------- */
 .card {
   position: relative;

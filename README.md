@@ -7,12 +7,13 @@ openheron 是一个**跑在本地、配置是文件的多 Agent 运行时** —�
 
 站点支持**中文与英文**两种语言（英文在根路径，中文在 `/zh`）。
 
-站点只做两件事：
+站点只做三件事：
 
 | 区块 | 路径 | 内容 |
 |---|---|---|
 | **介绍** | `/` `/zh` | openheron 是什么、能做什么、一轮对话怎么走、怎么跑起来 |
 | **使用说明** | `/manual/*` `/zh/manual/*` | 用户手册全文，按 10 章拆页，配侧边目录 |
+| **桌面版说明** | `/openheron-desktop` `/zh/openheron-desktop` | openheron-desktop 托盘启动器的安装、第一次启动、托盘菜单、排障（**站内精简版**，四段） |
 
 站内**不展示设计细节**（内部架构、依赖约束、设计分册）。内容全部来自 openheron 仓库的
 `docs/user-manual_zh.md` 与 `docs/user-manual.md`，不在本站手工维护：构建时由
@@ -112,7 +113,39 @@ SITE_URL=https://openheron.bytebits.top npm run deploy
   （Linux/macOS 是 `~/.config/.wrangler/config/default.toml`），不入库；
   `.gitignore` 已排除 `.wrangler/` 与 `.dev.vars`
 
-`npm run build` 会先跑 `prebuild` → `scripts/build-content.mjs`。
+`npm run build` 会先跑 `prebuild` → `scripts/build-content.mjs`（拆章）与
+`scripts/prepare-downloads.mjs`（取桌面版安装包）。
+
+### 桌面版安装包
+
+首页与桌面版说明页下载的是**相邻仓库 openheron-desktop 的构建产物**（两个平台）：
+
+- 来源默认 `../openheron-desktop/dist/windows` 与 `../openheron-desktop/dist/linux`，
+  可用环境变量 `DESKTOP_DIST` / `DESKTOP_DIST_LINUX` 分别覆盖；每个平台取版本号最高的那个产物
+- Windows 是 Inno Setup 的 `.exe` 安装包（15 MB），Linux 是自包含的 `.AppImage`（18 MB）
+- 两个包与**合并后的** `SHA256SUMS.txt`（两行，一个平台一行）被拷进 `public/downloads/`，
+  **不入库**（`.gitignore` 已排除）—— 33 MB × 每个版本会把仓库撑大
+- `public/downloads/desktop.json` 是**构建时实测**出来的元数据（版本、大小、sha256、构建日期），
+  页面读它，所以页面上的版本号与校验和永远和实际文件一致
+- **源目录不存在时不报错**：写 `available:false`，首页整块不显示、说明页只留一句提示，构建照常通过
+- 因此**换机器或 CI 构建前，要先跑一次 openheron-desktop 的打包脚本**
+  （Windows：`scripts/build-windows.ps1 -Version vX.Y.Z`；Linux：`scripts/build-linux.sh --version vX.Y.Z`，
+  必须在 Linux 上做），否则站点上没有安装包可下载
+- `public/_headers` 给 `/downloads/*` 加了 `Content-Disposition: attachment` 与一年 immutable 缓存
+  （文件名带版本号，可以 immutable）
+
+### 桌面版说明页
+
+`/openheron-desktop`（英文）与 `/zh/openheron-desktop`（中文）是**桌面版手册的站内精简版**，
+只四段：安装、第一次启动、托盘菜单、出问题了。
+
+- 文案是**手写的**，放在 `src/content/site-copy.ts` 的 `desktopGuide` 里（双语一一对应），
+  **不搬**桌面版项目的 USER-GUIDE.md 全文
+- 托盘菜单的行名**保留中文原样** —— 桌面版的界面本身就是中文的，英文页照实写，不翻成英文
+- 版本号 / 大小 / sha256 仍然取自 `desktop.json`，不写死在文案里
+- 完整手册在桌面版项目源码里（`openheron-desktop/docs/USER-GUIDE.md` 与英文版 `USER-GUIDE.en.md`）；
+  桌面版的安装器与 Linux 菜单项都指向本站这一页（地址写在桌面版仓库的 `scripts/manual-url.txt`，
+  全仓库唯一一处）
 
 ## 内容管线
 
@@ -156,6 +189,7 @@ OPENHERON_REPO=/path/to/openheron npm run build
 | `/zh` | 中文首页 |
 | `/manual` `/zh/manual` | 手册入口的旧目录地址 —— 301 跳到 `first-run` |
 | `/manual/<slug>` `/zh/manual/<slug>` | 章节正文（`first-run` 是入口章节） |
+| `/openheron-desktop` `/zh/openheron-desktop` | 桌面版说明页（安装 / 首启 / 托盘 / 排障） |
 
 - 语言定义与 URL 规则在 `src/i18n.ts`（单一事实源）
   —— 改默认语言就改这里的 `DEFAULT_LANG`：默认语言不带前缀，另一种语言挂在 `/<lang>` 下
@@ -172,6 +206,7 @@ OPENHERON_REPO=/path/to/openheron npm run build
 |---|---|
 | `/` `/zh` | 首页：定位、终端演示、**三条省 token 机制**、**边界声明**、**五条硬规则**、**架构示意简图**、可交互的 HITL 审批卡、核心能力表、出厂两个 agent、教程入口 |
 | `/manual/<slug>` `/zh/manual/<slug>` | 章节正文：原文全文 + 侧边目录（章 + 本章小节，滚动跟随高亮）+ 上下章导航 |
+| `/openheron-desktop` `/zh/openheron-desktop` | 桌面版说明页：双平台下载 + 安装 / 第一次启动 / 托盘菜单逐行 / 出问题了 |
 
 手册**没有独立的目录页**：页头「用户手册」直接落到入口章节 `first-run`，
 章节目录由章节页左侧的侧边栏承担（窄屏折成两列）。旧地址 `/manual`、`/zh/manual`

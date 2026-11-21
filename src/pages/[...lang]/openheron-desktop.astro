@@ -1,0 +1,584 @@
+---
+/**
+ * 桌面版说明页（站内精简版手册）。
+ *
+ * 路径：/openheron-desktop（英文）与 /zh/openheron-desktop（中文）。
+ * 内容按 openheron-desktop/docs/USER-GUIDE.md 精简：
+ * 安装 + 第一次启动 + 托盘菜单 + 出问题了 —— 四段。
+ *
+ * 正文字句在 src/content/site-copy.ts（手写文案单一来源）；
+ * 版本号、大小、sha256 来自构建时实测的 public/downloads/desktop.json。
+ */
+import Base from '../../layouts/Base.astro';
+import DesktopDownload from '../../components/DesktopDownload.astro';
+import Inline from '../../components/Inline.astro';
+import { desktopGuideUrl, homeUrl, manualUrl, DEFAULT_LANG, type Lang } from '../../i18n';
+import { desktopGuide as copy, site } from '../../content/site-copy';
+
+export function getStaticPaths() {
+  return [
+    // 默认语言（英文）不带前缀，直接挂在根路径
+    { params: { lang: undefined } },
+    { params: { lang: 'zh' } },
+  ];
+}
+
+const lang: Lang = Astro.params.lang === 'zh' ? 'zh' : DEFAULT_LANG;
+const other: Lang = lang === 'zh' ? 'en' : 'zh';
+
+/** 页面左侧的四段目录 */
+const sections = [
+  { id: 'install', label: copy.install.title[lang] },
+  { id: 'first-run', label: copy.firstRun.title[lang] },
+  { id: 'tray', label: copy.tray.title[lang] },
+  { id: 'trouble', label: copy.trouble.title[lang] },
+];
+
+/**
+ * 托盘菜单的行：先把「分隔线」和「动作行」统一成一种形状，
+ * 模板里就不用再判断联合类型。
+ */
+const trayRows = copy.tray.rows.map((row) =>
+  'separator' in row
+    ? { separator: true as const }
+    : {
+        separator: false as const,
+        label: row.label,
+        action: row.action[lang],
+        note: row.note[lang],
+      },
+);
+
+const title = `${copy.title[lang]} — ${site.name}`;
+const description = copy.lead[lang];
+---
+
+<Base title={title} description={description} lang={lang} alternatePath={desktopGuideUrl(other)}>
+  <div class="container guide-shell">
+    <aside class="guide-nav">
+      <div class="guide-nav__inner">
+        <a href={homeUrl(lang)} class="guide-nav__back">← {lang === 'zh' ? '返回首页' : 'Back to home'}</a>
+
+        <p class="guide-nav__label">{lang === 'zh' ? '本页' : 'On this page'}</p>
+        <ol class="guide-nav__list">
+          {
+            sections.map((s, i) => (
+              <li>
+                <a href={`#${s.id}`} data-toc={s.id}>
+                  <span class="guide-nav__no">{String(i + 1).padStart(2, '0')}</span>
+                  <span>{s.label}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </aside>
+
+    <article class="guide-body prose">
+      <header class="guide-head">
+        <span class="eyebrow">{copy.eyebrow[lang]}</span>
+        <h1>{copy.title[lang]}</h1>
+        <p class="guide-lead">{copy.lead[lang]}</p>
+        <p class="guide-scope"><Inline text={copy.scope[lang]} /></p>
+      </header>
+
+      <!-- ============ 下载 ============ -->
+      <section class="guide-download">
+        <h2 class="guide-h2">{copy.download.title[lang]}</h2>
+        <DesktopDownload lang={lang} />
+      </section>
+
+      <!-- ============ 一、安装 ============ -->
+      <section id="install" class="guide-section">
+        <h2 class="guide-h2">{copy.install.title[lang]}</h2>
+
+        <h3 class="guide-h3">{copy.install.windows.title[lang]}</h3>
+        <ol class="steps">
+          {
+            copy.install.windows.steps.map((s) => (
+              <li>
+                <Inline text={s.text[lang]} />
+              </li>
+            ))
+          }
+        </ol>
+        <ul class="notes">
+          {
+            copy.install.windows.notes.map((n) => (
+              <li>
+                <Inline text={n[lang].replace(/^★\s*/, '')} />
+              </li>
+            ))
+          }
+        </ul>
+
+        <h3 class="guide-h3">{copy.install.linux.title[lang]}</h3>
+        <ol class="steps">
+          {
+            copy.install.linux.steps.map((s) => (
+              <li>
+                <Inline text={s.text[lang]} />
+                {s.code && (
+                  <pre class="astro-code"><code>{s.code}</code></pre>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+        <ul class="notes">
+          {
+            copy.install.linux.notes.map((n) => (
+              <li>
+                <Inline text={n[lang].replace(/^★\s*/, '')} />
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ============ 二、第一次启动 ============ -->
+      <section id="first-run" class="guide-section">
+        <h2 class="guide-h2">{copy.firstRun.title[lang]}</h2>
+        <ol class="steps">
+          {
+            copy.firstRun.steps.map((s) => (
+              <li>
+                <Inline text={s.text[lang]} />
+              </li>
+            ))
+          }
+        </ol>
+        <ul class="notes">
+          {
+            copy.firstRun.notes.map((n) => (
+              <li>
+                <Inline text={n[lang].replace(/^★\s*/, '')} />
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ============ 三、托盘菜单 ============ -->
+      <section id="tray" class="guide-section">
+        <h2 class="guide-h2">{copy.tray.title[lang]}</h2>
+        <p><Inline text={copy.tray.lead[lang]} /></p>
+
+        <div class="table-scroll">
+          <table class="tbl-tray">
+            <thead>
+              <tr>
+                <th>{copy.tray.columns.item[lang]}</th>
+                <th>{copy.tray.columns.action[lang]}</th>
+                <th>{copy.tray.columns.note[lang]}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                trayRows.map((row) =>
+                  row.separator ? (
+                    <tr class="row-sep">
+                      <td colspan="3"></td>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <td class="row-item">{row.label}</td>
+                      <td>
+                        <Inline text={row.action} />
+                      </td>
+                      <td>
+                        <Inline text={row.note} />
+                      </td>
+                    </tr>
+                  ),
+                )
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 四、出问题了 ============ -->
+      <section id="trouble" class="guide-section">
+        <h2 class="guide-h2">{copy.trouble.title[lang]}</h2>
+
+        <h3 class="guide-h3">{copy.trouble.log.title[lang]}</h3>
+        <pre class="astro-code"><code>{`${copy.trouble.log.windows[lang]}
+${copy.trouble.log.linux[lang]}`}</code></pre>
+        <p><Inline text={copy.trouble.log.note[lang]} /></p>
+
+        <h3 class="guide-h3">{copy.trouble.casesTitle[lang]}</h3>
+        <div class="table-scroll">
+          <table class="tbl-trouble">
+            <thead>
+              <tr>
+                <th>{copy.trouble.columns.symptom[lang]}</th>
+                <th>{copy.trouble.columns.cause[lang]}</th>
+                <th>{copy.trouble.columns.fix[lang]}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                copy.trouble.cases.map((c) => (
+                  <tr>
+                    <td class="row-symptom">
+                      <Inline text={c.symptom[lang]} />
+                    </td>
+                    <td>
+                      <Inline text={c.cause[lang]} />
+                    </td>
+                    <td>
+                      <Inline text={c.fix[lang]} />
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <p class="guide-recovery"><Inline text={copy.trouble.recovery[lang]} /></p>
+      </section>
+
+      <!-- ============ 密钥 + 去哪儿看更多 ============ -->
+      <section class="guide-section">
+        <div class="callout">
+          <h3 class="callout__title">{copy.keys.title[lang]}</h3>
+          <p><Inline text={copy.keys.text[lang]} /></p>
+        </div>
+
+        <div class="callout callout--more">
+          <h3 class="callout__title">{copy.more.title[lang]}</h3>
+          <p>{copy.more.text[lang]}</p>
+          <a class="btn btn--ghost btn--sm" href={manualUrl(lang, 'first-run')}>
+            {lang === 'zh' ? '打开用户手册 →' : 'Open the user manual →'}
+          </a>
+        </div>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .guide-shell {
+    display: flex;
+    gap: 56px;
+    align-items: flex-start;
+    padding-top: var(--page-top);
+    padding-bottom: 80px;
+  }
+
+  .guide-nav {
+    flex: 0 0 200px;
+    /* 与手册侧栏同一个道理：撑满整行，sticky 才有吸顶的空间 */
+    align-self: stretch;
+  }
+
+  .guide-nav__inner {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .guide-nav__back {
+    font-size: 13.5px;
+    color: var(--text-faint);
+  }
+
+  .guide-nav__back:hover {
+    color: var(--accent);
+  }
+
+  .guide-nav__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-top: 6px;
+  }
+
+  .guide-nav__list {
+    display: grid;
+    gap: 1px;
+  }
+
+  .guide-nav__list a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .guide-nav__list a:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .guide-nav__list a.is-active {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+
+  .guide-nav__no {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  .guide-nav__list a.is-active .guide-nav__no {
+    color: var(--accent);
+  }
+
+  .guide-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: 780px;
+  }
+
+  .guide-head {
+    padding-bottom: 26px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .guide-head h1 {
+    font-size: clamp(28px, 3.6vw, 40px);
+    margin-bottom: 18px;
+  }
+
+  .guide-lead {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+
+  .guide-scope {
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-faint);
+  }
+
+  /* h2 / h3 的字号与间距交给 .prose（正文样式），这里只管滚动落点与下载区的上边距 */
+  .guide-download .guide-h2 {
+    margin-top: 0;
+  }
+
+  /* 步骤：序号自己画，不用浏览器默认的编号样式 */
+  .guide-body :global(ol.steps) {
+    list-style: none;
+    padding-left: 0;
+    margin: 0 0 20px;
+    counter-reset: step;
+  }
+
+  .guide-body :global(ol.steps > li) {
+    position: relative;
+    padding-left: 34px;
+    margin-bottom: 14px;
+    counter-increment: step;
+  }
+
+  .guide-body :global(ol.steps > li::before) {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+
+  /* ★ 提示：★ 是内容的一部分，不只是装饰 —— 所以放进内容流里 */
+  .guide-body :global(ul.notes) {
+    list-style: none;
+    padding-left: 0;
+    margin: 18px 0 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .guide-body :global(ul.notes > li) {
+    position: relative;
+    padding-left: 24px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+
+  .guide-body :global(ul.notes > li::before) {
+    content: '★';
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  /* 表格第一列是菜单项名：不折行更好读 */
+  .guide-body :global(td.row-item) {
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  /* 托盘表：中间一列不能被挤扁 —— 给个最小宽度，窄屏时整张表横向滚动 */
+  .guide-body :global(table.tbl-tray) {
+    min-width: 560px;
+  }
+
+  /* 排障表：症状那列很长（英文版尤其），不设 nowrap ——
+     否则第一列把宽度吃光，中间的「原因」列被挤成一列一个字。
+     三列定死比例，窄屏时横向滚动。 */
+  .guide-body :global(table.tbl-trouble) {
+    table-layout: fixed;
+    min-width: 640px;
+  }
+
+  .guide-body :global(table.tbl-trouble th:nth-child(1)) {
+    width: 30%;
+  }
+
+  .guide-body :global(table.tbl-trouble th:nth-child(2)) {
+    width: 24%;
+  }
+
+  .guide-body :global(table.tbl-trouble th:nth-child(3)) {
+    width: 46%;
+  }
+
+  .guide-body :global(table.tbl-trouble td code) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .guide-body :global(td.row-symptom) {
+    color: var(--text);
+  }
+
+  .guide-body :global(tr.row-sep td) {
+    padding: 0;
+    height: 14px;
+    border-bottom: none;
+    background: linear-gradient(var(--border), var(--border)) center / 100% 1px no-repeat;
+  }
+
+  .guide-recovery {
+    margin-top: 22px;
+    padding: 14px 20px;
+    border-left: 2px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--accent-soft);
+    color: var(--text-muted);
+  }
+
+  .callout {
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    margin-top: 22px;
+  }
+
+  .callout--more {
+    border-color: var(--accent-line);
+  }
+
+  .callout__title {
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .callout p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .callout p:last-child {
+    margin-bottom: 0;
+  }
+
+  .callout :global(code) {
+    font-size: 0.875em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 5px;
+    padding: 1px 6px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 1000px) {
+    .guide-shell {
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .guide-nav {
+      flex: 1 1 auto;
+      align-self: flex-start;
+    }
+
+    .guide-nav__inner {
+      position: static;
+    }
+
+    .guide-nav__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px 12px;
+    }
+  }
+</style>
+
+<script>
+  // 左侧四段目录的高亮：取「最后一个已经滚过判定线的那一段」。
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc]')];
+  const targets = links
+    .map((l) => document.getElementById(l.dataset.toc ?? ''))
+    .filter((el): el is HTMLElement => Boolean(el));
+
+  if (targets.length) {
+    const LINE = 140;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      let current = targets[0];
+      for (const target of targets) {
+        if (target.getBoundingClientRect().top <= LINE) current = target;
+        else break;
+      }
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) {
+        current = targets[targets.length - 1];
+      }
+      links.forEach((l) => l.classList.toggle('is-active', l.dataset.toc === current.id));
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+  }
+</script>

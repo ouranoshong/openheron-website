@@ -72,6 +72,19 @@ export function manualUrl(lang: Lang, slug?: string): string {
 }
 
 /**
+ * 桌面版说明页（站内精简版手册）的地址。
+ *
+ * 单独一个顶级路径，不挂在 /manual 下面 —— 它讲的是**另一个软件**
+ * （openheron-desktop 托盘启动器），不是 openheron 本体的手册。
+ * 默认语言（英文）挂在根上，中文在 /zh 下，与站内其它地址一致。
+ */
+export const DESKTOP_GUIDE_SLUG = 'openheron-desktop';
+
+export function desktopGuideUrl(lang: Lang): string {
+  return lang === DEFAULT_LANG ? `/${DESKTOP_GUIDE_SLUG}` : `/${lang}/${DESKTOP_GUIDE_SLUG}`;
+}
+
+/**
  * 把一条站内路径翻译成另一语言下的对应路径。
  * 用于语言切换器：当前在 /zh/manual/faq 时，英文版是 /manual/faq。
  *
@@ -79,6 +92,7 @@ export function manualUrl(lang: Lang, slug?: string): string {
  *   /[lang]            → 另一种语言的首页
  *   /[lang]/manual/... → 另一种语言的同名手册页
  *   /[lang]/manual     → 另一种语言的入口章节（没有目录页了）
+ *   /[lang]/openheron-desktop → 另一种语言的桌面版说明页
  * 认不出来的路径原样返回（切换器就会退化成跳首页）。
  */
 export function translatePath(pathname: string, target: Lang): string {
@@ -89,8 +103,9 @@ export function translatePath(pathname: string, target: Lang): string {
   // 默认语言没有前缀：有前缀就剥掉，剩下的部分两种语言一致
   const rest = isLang(segs[0]) ? segs.slice(1) : segs;
 
-  if (rest[0] !== 'manual') return homeUrl(target);
-  return manualUrl(target, rest[1]);
+  if (rest[0] === 'manual') return manualUrl(target, rest[1]);
+  if (rest[0] === DESKTOP_GUIDE_SLUG) return desktopGuideUrl(target);
+  return homeUrl(target);
 }
 
 /**

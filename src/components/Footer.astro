@@ -1,7 +1,8 @@
 ---
 import BrandMark from './BrandMark.astro';
-import { manualUrl, type Lang } from '../i18n';
-import { footer as copy } from '../content/site-copy';
+import { manualUrl, desktopGuideUrl, type Lang } from '../i18n';
+import { footer as copy, nav } from '../content/site-copy';
+import { readDesktopMeta } from '../lib/desktop';
 
 interface Props {
   lang: Lang;
@@ -10,6 +11,9 @@ interface Props {
 const { lang } = Astro.props;
 
 const year = new Date().getFullYear();
+
+// 桌面版的下载入口：取不到产物就不列这一条（页脚不该挂一个点不动的链接）。
+const desktop = readDesktopMeta();
 
 const groups = [
   {
@@ -26,6 +30,18 @@ const groups = [
       { href: manualUrl(lang, 'configuration'), label: lang === 'zh' ? '配置怎么写' : 'Writing configuration' },
       { href: manualUrl(lang, 'multi-agent'), label: lang === 'zh' ? '多 Agent 与委派' : 'Multiple agents' },
       { href: manualUrl(lang, 'commands'), label: lang === 'zh' ? '命令行速查' : 'Command-line reference' },
+    ],
+  },
+  {
+    title: nav.desktop[lang],
+    links: [
+      { href: desktopGuideUrl(lang), label: lang === 'zh' ? '安装与使用' : 'Install and use' },
+      ...(desktop
+        ? desktop.packages.map((p) => ({
+            href: p.url,
+            label: `${p.platformLabel} · ${p.sizeText}`,
+          }))
+        : []),
     ],
   },
 ];
@@ -90,8 +106,8 @@ const groups = [
 
   .footer__inner {
     display: grid;
-    grid-template-columns: 1.6fr repeat(3, 1fr);
-    gap: 40px;
+    grid-template-columns: 1.6fr repeat(4, 1fr);
+    gap: 32px;
     padding-bottom: 40px;
   }
 

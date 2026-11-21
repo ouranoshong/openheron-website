@@ -1,7 +1,14 @@
 ---
 import BrandMark from './BrandMark.astro';
 import LangSwitch from './LangSwitch.astro';
-import { homeUrl, manualUrl, manualBaseUrl, MANUAL_ENTRY_SLUG, type Lang } from '../i18n';
+import {
+  homeUrl,
+  manualUrl,
+  manualBaseUrl,
+  desktopGuideUrl,
+  MANUAL_ENTRY_SLUG,
+  type Lang,
+} from '../i18n';
 import { nav as copy } from '../content/site-copy';
 
 interface Props {
@@ -24,11 +31,15 @@ const onCommands = current === commandsHref || current.startsWith(`${commandsHre
 // 但命令行速查更具体 —— 由它自己点亮，避免两个同时高亮。
 const onManual =
   (current === manualBase || current.startsWith(`${manualBase}/`)) && !onCommands;
+// 桌面版说明页是顶级路径，单独判断（它不在手册路径下）。
+const desktopHref = desktopGuideUrl(lang);
+const onDesktop = current === desktopHref;
 
 const nav = [
   { href: homeUrl(lang), label: copy.home[lang], active: current === homeUrl(lang) },
   { href: manualUrl(lang, MANUAL_ENTRY_SLUG), label: copy.manual[lang], active: onManual },
   { href: commandsHref, label: copy.commands[lang], active: onCommands },
+  { href: desktopHref, label: copy.desktop[lang], active: onDesktop },
 ];
 ---
 

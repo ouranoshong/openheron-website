@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/build-content.mjs && astro dev",
-    "prebuild": "node scripts/build-content.mjs",
+    "dev": "node scripts/build-content.mjs && node scripts/prepare-downloads.mjs && astro dev",
+    "prebuild": "node scripts/build-content.mjs && node scripts/prepare-downloads.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

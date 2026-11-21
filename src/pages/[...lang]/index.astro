@@ -4,8 +4,10 @@ import Base from '../../layouts/Base.astro';
 import Snippet from '../../components/Snippet.astro';
 import ApprovalDemo from '../../components/ApprovalDemo.astro';
 import ArchDiagram from '../../components/ArchDiagram.astro';
-import { homeUrl, manualUrl, DEFAULT_LANG, type Lang } from '../../i18n';
+import DesktopDownload from '../../components/DesktopDownload.astro';
+import { homeUrl, manualUrl, desktopGuideUrl, DEFAULT_LANG, type Lang } from '../../i18n';
 import { home as copy, ui, site } from '../../content/site-copy';
+import { readDesktopMeta } from '../../lib/desktop';
 
 export function getStaticPaths() {
   return [
@@ -35,6 +37,11 @@ const featured = [
   { slug: 'knowledge-base', label: lang === 'zh' ? '知识库' : 'The knowledge base' },
   { slug: 'commands', label: lang === 'zh' ? '命令行速查' : 'Command-line reference' },
 ];
+
+// 桌面版安装包：元数据由 scripts/prepare-downloads.mjs 在构建时实测写入
+// public/downloads/desktop.json（版本、大小、sha256 都是量出来的，不是写死的）。
+// 这台机器上取不到产物 —— 整块不显示：宁可没有入口，也不要一个点不动的下载链接。
+const desktop = readDesktopMeta();
 
 const quickstartCode = lang === 'zh'
   ? `# 构建（前端 + 单文件二进制）
@@ -129,6 +136,26 @@ const terminalBody = lang === 'zh'
       </div>
     </div>
   </section>
+
+  <!-- ============ 桌面版安装包 ============ -->
+  {
+    desktop && (
+      <section class="section section--tight">
+        <div class="container">
+          <div class="dl" data-enter="rise">
+            <div class="dl__text">
+              <span class="eyebrow">{copy.desktop.eyebrow[lang]}</span>
+              <h2>{copy.desktop.title[lang]}</h2>
+              <p>{copy.desktop.lead[lang]}</p>
+              <p class="dl__aside">{copy.desktop.other[lang]}</p>
+            </div>
+
+            <DesktopDownload lang={lang} guideHref={desktopGuideUrl(lang)} />
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   <!-- ============ 三条机制 ============ -->
   <section class="section">
@@ -625,6 +652,37 @@ const terminalBody = lang === 'zh'
     margin: 18px 0 22px;
     font-size: 13.5px;
     color: var(--text-faint);
+  }
+
+  /* ---- 桌面版安装包 ---- */
+  .dl {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .dl__text h2 {
+    font-size: clamp(26px, 3.4vw, 38px);
+    margin-bottom: 14px;
+  }
+
+  .dl__text > p {
+    color: var(--text-muted);
+    font-size: 15.5px;
+  }
+
+  .dl__aside {
+    margin-top: 12px;
+    font-size: 13.5px;
+    color: var(--text-faint);
+  }
+
+  @media (max-width: 900px) {
+    .dl {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
   }
 
   /* ---- 快速开始 ---- */
