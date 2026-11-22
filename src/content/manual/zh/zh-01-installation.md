@@ -205,6 +205,8 @@ HOST IP     HOST PORT   SANDBOX PORT   PROTOCOL
 它在回环地址上把 openheron 拉起来，再开一个内嵌窗口给你看，顺手管更新。
 它**只做九件事**（用户级目录、单实例、端口分配、二进制版本、健康检查、
 强制回环、托盘、能力探测、内嵌窗口），★ **密钥、配置、项目它一个字都不碰**（§4.2）。
+★ 它要的是 **openheron `v0.3.0` 或更新**（安装包自带一份）—— 但它**不认版本号、只认能力**：
+启动前跑一次 `openheron --help`，少了 `--config-root` 它就拒绝启动（§10）。
 
 **Windows。** 从[官网](https://openheron.bytebits.top)下载
 `openheron-desktop-*-windows-amd64-setup.exe`：
@@ -225,6 +227,10 @@ chmod +x openheron-desktop-*-linux-amd64.AppImage
 
 ★ **Linux 上没有「安装」这一步** —— AppImage 是**自包含归档**，跑起来就在了；
 第一次运行时它把自带的 openheron 放进 `~/.config/openheron-desktop/bin/`。
+
+★ Linux 上还差两样：**GTK 3 + WebKitGTK 4.1**（内嵌窗口用；缺了**不是故障** ——
+窗口退回复系统浏览器，托盘和功能照旧）与 **FUSE**（AppImage 靠它把自己挂成文件系统）。
+缺 FUSE 时用 AppImage 自带的绕法：`--appimage-extract-and-run`（慢一点，但不用装东西）。
 
 ★ 桌面版**不是必须的**：命令行装法（§1.1）一样能用，而且**两边用的是同一份东西** ——
 大本营、配置树、项目表、历史都是同一份（§3）。怎么用见 §2.4。

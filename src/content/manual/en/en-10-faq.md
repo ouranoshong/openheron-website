@@ -114,6 +114,13 @@ protocol, so an SNI host has to display it. KDE Plasma has one built in; ★
 (Debian/Ubuntu: `gnome-shell-extension-appindicator`) and enable it. Searching
 the log for `systray error` shows whether that is the problem.
 
+**Q: Can the tray menu be switched to English?**
+Yes: click **"language ▸"** in the tray and pick `English` — ★ the menu
+**redraws at once**, no restart, and the choice is **remembered** (it is written
+into `desktop.yaml` as `lang:`). ★ By default it **follows your system
+language**. ★ But the **web interface in the embedded window** is not affected
+— that is openheron's own interface.
+
 **Q: The desktop app does not start and says openheron is too old?**
 ★ The desktop app **does not read version numbers, it reads capabilities** — it
 runs `openheron --help` before starting and looks for `--config-root` /

@@ -231,6 +231,10 @@ directories, the single instance, the port allocation, the binary version, the
 health check, the forced loopback, the tray, the capability probe and the
 embedded window), ★ **and it does not touch a single byte of your keys,
 configuration or projects** (§4.2).
+★ It wants **openheron `v0.3.0` or newer** (the package carries one of its
+own) — but it **does not read version numbers, it reads capabilities**: it runs
+`openheron --help` before starting, and without `--config-root` it refuses to
+start (§10).
 
 **Windows.** Download `openheron-desktop-*-windows-amd64-setup.exe` from the
 [website](https://openheron.bytebits.top):
@@ -256,6 +260,12 @@ chmod +x openheron-desktop-*-linux-amd64.AppImage
 ★ **There is no "installation" step on Linux** — an AppImage is a **self-contained
 archive**, so running it is all it takes; on the first run it puts its own
 openheron into `~/.config/openheron-desktop/bin/`.
+
+★ Linux wants two more things: **GTK 3 + WebKitGTK 4.1** (for the embedded
+window; missing them is **not a fault** — the window falls back to the system
+browser and the tray keeps working) and **FUSE** (an AppImage mounts itself as
+a filesystem through it). Without FUSE, use the AppImage's own way out:
+`--appimage-extract-and-run` (slower, but nothing to install).
 
 ★ The desktop app is **not required**: the command line works just as well
 (§1.1), and **both use the same things** — the home base, the configuration

@@ -96,6 +96,11 @@ KDE Plasma 自带；★ **GNOME 默认不带** ⇒ 装个 AppIndicator 扩展
 （Debian/Ubuntu：`gnome-shell-extension-appindicator`）并启用。
 日志里搜 `systray error` 能看出是不是它。
 
+**Q：托盘菜单能换成英文吗？**
+能：托盘「**语言 ▸**」里点 `English` —— ★ **菜单当场重画**，不用重启；
+选了什么会**记住**（写进 `desktop.yaml` 的 `lang:`）。★ 默认**跟着你的系统语言**。
+★ 但**内嵌窗口里那个网页界面**不受它管 —— 那是 openheron 自己的界面。
+
 **Q：桌面版起不来，提示 openheron 太旧？**
 ★ 桌面版**不认版本号、只认能力** —— 启动前跑一次 `openheron --help`，看有没有
 `--config-root` / `--openheron-root`。没有就拒绝启动：手动更新 openheron（§1.1），
